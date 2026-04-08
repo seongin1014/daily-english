@@ -151,6 +151,17 @@ daily-english/
 
 ---
 
+## 최근 코드 리뷰 반영 (simplify)
+3개 병렬 리뷰 에이전트 (재사용/품질/성능) 결과 반영:
+- `getStudyStats()` 4쿼리→1쿼리 (SUM CASE WHEN)
+- `getWeeklyActivity()` 7쿼리→1쿼리 (GROUP BY)
+- `splitSentences()` 재사용 (recording/[id].tsx 인라인 정규식 제거)
+- `setBrowseMode()` 스토어 액션 추가 (login.tsx require() 해킹 제거)
+- 웨이브폼/문장분리 `useMemo` 적용 (불필요한 재계산 방지)
+- `new Date().getDay()` 호이스트 (study.tsx)
+
+---
+
 ## Git 커밋 히스토리
 1. `feat: Daily English MVP 전체 구현` — 39파일, 9화면, SQLite, SM-2
 2. `feat: Firebase 백엔드 + 구독 모델 전환` — Auth, Cloud Functions, Firestore, RevenueCat
@@ -160,3 +171,6 @@ daily-english/
 6. `test: SM-2 단위 테스트 추가` — 15개 테스트 통과
 7. `feat: 수동 표현 추가 + 학습 통계 대시보드 강화` — 탭 저장, Top 5
 8. `fix: 하드코딩 제거 + 플래시카드 빈 상태 분기 + 둘러보기 모드`
+9. `docs: HANDOVER.md 프로젝트 현황 문서`
+10. `chore: 오래된 초기 계획 파일 정리`
+11. `refactor: 코드 리뷰 반영 — 품질/성능/재사용성 개선`
