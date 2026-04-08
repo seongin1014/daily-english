@@ -44,23 +44,21 @@ export interface StudyStats {
 
 export async function getStudyStats(): Promise<StudyStats> {
   const db = await getDatabase();
-  const mastered = await db.getFirstAsync<{ count: number }>(
-    'SELECT COUNT(*) as count FROM reviews WHERE repetitions >= 5 AND ease_factor >= 2.5'
-  );
-  const learning = await db.getFirstAsync<{ count: number }>(
-    'SELECT COUNT(*) as count FROM reviews WHERE repetitions > 0 AND NOT (repetitions >= 5 AND ease_factor >= 2.5)'
-  );
-  const newCards = await db.getFirstAsync<{ count: number }>(
-    'SELECT COUNT(*) as count FROM reviews WHERE repetitions = 0'
-  );
-  const total = await db.getFirstAsync<{ count: number }>(
-    'SELECT COUNT(*) as count FROM reviews'
+  const result = await db.getFirstAsync<{
+    total: number; mastered: number; learning: number; new_cards: number;
+  }>(
+    `SELECT
+      COUNT(*) as total,
+      SUM(CASE WHEN repetitions >= 5 AND ease_factor >= 2.5 THEN 1 ELSE 0 END) as mastered,
+      SUM(CASE WHEN repetitions > 0 AND NOT (repetitions >= 5 AND ease_factor >= 2.5) THEN 1 ELSE 0 END) as learning,
+      SUM(CASE WHEN repetitions = 0 THEN 1 ELSE 0 END) as new_cards
+    FROM reviews`
   );
   return {
-    mastered: mastered?.count ?? 0,
-    learning: learning?.count ?? 0,
-    newCards: newCards?.count ?? 0,
-    total: total?.count ?? 0,
+    mastered: result?.mastered ?? 0,
+    learning: result?.learning ?? 0,
+    newCards: result?.new_cards ?? 0,
+    total: result?.total ?? 0,
   };
 }
 
@@ -74,16 +72,20 @@ export async function getTodayReviewCount(): Promise<number> {
 
 export async function getWeeklyActivity(): Promise<number[]> {
   const db = await getDatabase();
-  // Returns review count for each of the last 7 days (Mon-Sun)
-  const days: number[] = [];
-  for (let i = 6; i >= 0; i--) {
-    const result = await db.getFirstAsync<{ count: number }>(
-      "SELECT COUNT(*) as count FROM reviews WHERE date(last_review) = date('now', ? || ' days')",
-      `-${i}`
-    );
-    days.push(result?.count ?? 0);
+  const rows = await db.getAllAsync<{ days_ago: number; count: number }>(
+    `SELECT CAST(julianday(date('now')) - julianday(date(last_review)) AS INTEGER) AS days_ago,
+            COUNT(*) as count
+     FROM reviews
+     WHERE last_review IS NOT NULL AND date(last_review) >= date('now', '-6 days')
+     GROUP BY days_ago`
+  );
+  // Map into 7-element array [6 days ago ... today]
+  const result = [0, 0, 0, 0, 0, 0, 0];
+  for (const row of rows) {
+    const idx = 6 - row.days_ago;
+    if (idx >= 0 && idx < 7) result[idx] = row.count;
   }
-  return days;
+  return result;
 }
 
 export async function getHardestExpressions(limit: number = 5): Promise<{ korean: string; english: string; ease_factor: number }[]> {

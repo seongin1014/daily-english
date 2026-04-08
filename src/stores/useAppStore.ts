@@ -14,6 +14,7 @@ interface AppState {
   setSubscription: (v: 'free' | 'pro') => void;
   setMonthlyUsage: (count: number, limit: number) => void;
   setIsProcessing: (v: boolean) => void;
+  setBrowseMode: () => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -29,4 +30,5 @@ export const useAppStore = create<AppState>((set) => ({
   setSubscription: (v) => set({ subscription: v, monthlyLimit: v === 'pro' ? 999999 : 5 }),
   setMonthlyUsage: (count, limit) => set({ monthlyUsage: count, monthlyLimit: limit }),
   setIsProcessing: (v) => set({ isProcessing: v }),
+  setBrowseMode: () => set({ user: null, isAuthenticated: true, authLoading: false }),
 }));

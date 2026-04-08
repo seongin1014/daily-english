@@ -8,6 +8,7 @@ import * as Crypto from 'expo-crypto';
 import * as WebBrowser from 'expo-web-browser';
 import { colors } from '@/src/theme/colors';
 import { signInWithApple, signInWithGoogle } from '@/src/services/firebase';
+import { useAppStore } from '@/src/stores/useAppStore';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -135,11 +136,7 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={styles.skipBtn}
           onPress={() => {
-            // Set DEV_SKIP flag via app store and navigate
-            const { setUser } = require('@/src/stores/useAppStore').useAppStore.getState();
-            setUser(null);
-            // Manually set authLoading to false to bypass guard
-            require('@/src/stores/useAppStore').useAppStore.setState({ authLoading: false, isAuthenticated: true });
+            useAppStore.getState().setBrowseMode();
             router.replace('/');
           }}
           activeOpacity={0.7}

@@ -17,6 +17,7 @@ export default function StudyHub() {
   const { data: hardest } = useHardestExpressions(5);
   const masteryPct = stats.total > 0 ? Math.round((stats.mastered / stats.total) * 100) : 0;
   const maxWeekly = Math.max(...weeklyActivity, 1);
+  const todayDayOfWeek = new Date().getDay();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -78,9 +79,8 @@ export default function StudyHub() {
             {['월', '화', '수', '목', '금', '토', '일'].map((day, i) => {
               const count = weeklyActivity[i] ?? 0;
               const barH = maxWeekly > 0 ? Math.max(4, (count / maxWeekly) * 48) : 4;
-              const today = new Date().getDay();
               const dayIndex = i === 6 ? 0 : i + 1;
-              const isToday = dayIndex === today;
+              const isToday = dayIndex === todayDayOfWeek;
               return (
                 <View key={day} style={styles.dayCol}>
                   <View style={[styles.dayBar, { height: barH, backgroundColor: isToday ? colors.secondary : count > 0 ? colors.primaryFixedDim : colors.outlineVariant }]} />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Modal, TextInput, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { colors } from '@/src/theme/colors';
 import { useRecording, useExpressions, invalidateDB } from '@/src/db/hooks';
 import { createExpression } from '@/src/db/expressions';
+import { splitSentences } from '@/src/services/extract';
 import { FocusPlate } from '@/src/components/ui/FocusPlate';
 import { Badge } from '@/src/components/ui/Badge';
 import type { Difficulty } from '@/src/types/expression';
@@ -47,6 +48,19 @@ export default function RecordingDetailScreen() {
     setShowAddModal(true);
   };
 
+  const koreanSentences = useMemo(
+    () => recording?.korean_transcript ? splitSentences(recording.korean_transcript) : [],
+    [recording?.korean_transcript]
+  );
+  const englishSentences = useMemo(
+    () => recording?.english_translation ? splitSentences(recording.english_translation) : [],
+    [recording?.english_translation]
+  );
+  const waveHeights = useMemo(
+    () => Array.from({ length: 20 }, () => 8 + Math.random() * 24),
+    [recording?.id]
+  );
+
   if (!recording) return null;
 
   const dateStr = new Date(recording.created_at).toLocaleDateString('ko-KR');
@@ -85,8 +99,8 @@ export default function RecordingDetailScreen() {
         {/* Audio Player Placeholder */}
         <View style={styles.player}>
           <View style={styles.waveform}>
-            {Array.from({ length: 20 }).map((_, i) => (
-              <View key={i} style={[styles.waveBar, { height: 8 + Math.random() * 24 }]} />
+            {waveHeights.map((h, i) => (
+              <View key={i} style={[styles.waveBar, { height: h }]} />
             ))}
           </View>
           <TouchableOpacity style={styles.playBtn}>
@@ -99,9 +113,8 @@ export default function RecordingDetailScreen() {
             {recording.korean_transcript ? (
               <>
                 <Text style={styles.sectionLabel}>문장을 탭하면 표현으로 저장할 수 있어요</Text>
-                {recording.korean_transcript.split(/(?<=[.?!。？！])\s*/).filter(Boolean).map((sentence, i) => {
-                  const engSentences = (recording.english_translation || '').split(/(?<=[.?!])\s*/).filter(Boolean);
-                  const eng = engSentences[i] || '';
+                {koreanSentences.map((sentence, i) => {
+                  const eng = englishSentences[i] || '';
                   return (
                     <TouchableOpacity
                       key={i}
