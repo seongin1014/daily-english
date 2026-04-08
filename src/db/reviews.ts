@@ -64,6 +64,40 @@ export async function getStudyStats(): Promise<StudyStats> {
   };
 }
 
+export async function getTodayReviewCount(): Promise<number> {
+  const db = await getDatabase();
+  const result = await db.getFirstAsync<{ count: number }>(
+    "SELECT COUNT(*) as count FROM reviews WHERE date(last_review) = date('now')"
+  );
+  return result?.count ?? 0;
+}
+
+export async function getWeeklyActivity(): Promise<number[]> {
+  const db = await getDatabase();
+  // Returns review count for each of the last 7 days (Mon-Sun)
+  const days: number[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const result = await db.getFirstAsync<{ count: number }>(
+      "SELECT COUNT(*) as count FROM reviews WHERE date(last_review) = date('now', ? || ' days')",
+      `-${i}`
+    );
+    days.push(result?.count ?? 0);
+  }
+  return days;
+}
+
+export async function getHardestExpressions(limit: number = 5): Promise<{ korean: string; english: string; ease_factor: number }[]> {
+  const db = await getDatabase();
+  return db.getAllAsync(
+    `SELECT e.korean, e.english, r.ease_factor
+     FROM reviews r JOIN expressions e ON r.expression_id = e.id
+     WHERE r.repetitions > 0
+     ORDER BY r.ease_factor ASC
+     LIMIT ?`,
+    limit
+  );
+}
+
 export async function getStreak(): Promise<number> {
   const db = await getDatabase();
   // Count consecutive days with at least one review

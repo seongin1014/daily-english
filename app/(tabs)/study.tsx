@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors } from '@/src/theme/colors';
-import { useDueCardCount, useStudyStats } from '@/src/db/hooks';
+import { useDueCardCount, useStudyStats, useTodayReviewCount, useWeeklyActivity, useHardestExpressions } from '@/src/db/hooks';
 import { Card } from '@/src/components/ui/Card';
 
 export default function StudyHub() {
@@ -12,7 +12,11 @@ export default function StudyHub() {
   const insets = useSafeAreaInsets();
   const { data: dueCount } = useDueCardCount();
   const { data: stats } = useStudyStats();
+  const { data: todayReviewed } = useTodayReviewCount();
+  const { data: weeklyActivity } = useWeeklyActivity();
+  const { data: hardest } = useHardestExpressions(5);
   const masteryPct = stats.total > 0 ? Math.round((stats.mastered / stats.total) * 100) : 0;
+  const maxWeekly = Math.max(...weeklyActivity, 1);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -68,22 +72,40 @@ export default function StudyHub() {
         <Card style={styles.timeCard}>
           <View style={styles.timeHeader}>
             <Text style={styles.sectionTitle}>학습 현황</Text>
-            <Text style={styles.timeAvg}>총 {stats.total}개 표현</Text>
+            <Text style={styles.timeAvg}>오늘 {todayReviewed}개 복습</Text>
           </View>
           <View style={styles.weekRow}>
             {['월', '화', '수', '목', '금', '토', '일'].map((day, i) => {
+              const count = weeklyActivity[i] ?? 0;
+              const barH = maxWeekly > 0 ? Math.max(4, (count / maxWeekly) * 48) : 4;
               const today = new Date().getDay();
-              const dayIndex = i === 6 ? 0 : i + 1; // 월=1 ... 일=0
+              const dayIndex = i === 6 ? 0 : i + 1;
               const isToday = dayIndex === today;
               return (
                 <View key={day} style={styles.dayCol}>
-                  <View style={[styles.dayBar, { height: isToday ? 32 : 8, backgroundColor: isToday ? colors.secondary : colors.outlineVariant }]} />
+                  <View style={[styles.dayBar, { height: barH, backgroundColor: isToday ? colors.secondary : count > 0 ? colors.primaryFixedDim : colors.outlineVariant }]} />
                   <Text style={[styles.dayLabel, isToday && { fontFamily: 'Pretendard-Bold', color: colors.onSurface }]}>{day}</Text>
                 </View>
               );
             })}
           </View>
         </Card>
+
+        {/* 어려운 표현 Top 5 */}
+        {hardest.length > 0 && (
+          <>
+            <Text style={styles.quizSectionTitle}>어려운 표현 Top {hardest.length}</Text>
+            {hardest.map((expr, i) => (
+              <View key={i} style={styles.hardItem}>
+                <Text style={styles.hardRank}>{i + 1}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.hardKorean}>{expr.korean}</Text>
+                  <Text style={styles.hardEnglish}>{expr.english}</Text>
+                </View>
+              </View>
+            ))}
+          </>
+        )}
 
         {/* Quiz Section */}
         <Text style={styles.quizSectionTitle}>퀴즈 학습</Text>
@@ -168,4 +190,8 @@ const styles = StyleSheet.create({
   wisdomTitle: { fontFamily: 'Manrope-Bold', fontSize: 18, color: colors.onSurface, marginBottom: 12 },
   wisdomQuote: { fontFamily: 'Inter', fontSize: 15, color: colors.onSurfaceVariant, lineHeight: 24, fontStyle: 'italic', marginBottom: 12 },
   wisdomAuthor: { fontFamily: 'Inter-Medium', fontSize: 12, color: colors.outline },
+  hardItem: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: colors.surfaceContainerLowest, borderRadius: 12, padding: 16, marginBottom: 8 },
+  hardRank: { fontFamily: 'Manrope-ExtraBold', fontSize: 20, color: colors.secondary, width: 28, textAlign: 'center' },
+  hardKorean: { fontFamily: 'Pretendard-Bold', fontSize: 15, color: colors.onSurface },
+  hardEnglish: { fontFamily: 'Pretendard', fontSize: 13, color: colors.onSurfaceVariant, marginTop: 2 },
 });
