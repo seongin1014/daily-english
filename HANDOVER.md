@@ -88,32 +88,6 @@
 
 ---
 
-## Gemini 작업 내역 (Handover from Gemini)
-
-### A. 비밀번호 재설정 기능
-- `src/hooks/useAuth.ts`: Firebase `sendPasswordResetEmail` 함수 구현
-- `app/(auth)/forgot-password.tsx`: 이메일 입력 + 재설정 링크 발송 화면
-- `app/(auth)/login.tsx`: "비밀번호를 잊으셨나요?" 링크 추가
-- `src/constants/i18n.ts`: 관련 문구 (영문/국문)
-
-### B. OTA 업데이트 인프라
-- `expo-updates` 설치
-- `app.json`: updates URL + runtimeVersion 정책 (appVersion)
-- `eas.json`: production/preview/development 각 프로필에 channel 설정
-- **이 버전부터 `eas update`로 JS 코드 실시간 업데이트 가능**
-
-### C. 빌드 결과
-- **Android AAB:** [다운로드](https://expo.dev/artifacts/eas/3onwZoKBtam8Ro6FGMcspn.aab)
-- Google Play 비공개 테스트 중
-
-### D. 다음 확인 사항
-1. Firebase Console → Authentication → Email/Password 로그인 활성화 확인
-2. Google Play Console → 앱 서명 키 SHA-1 → Firebase 프로젝트 설정에 등록
-3. `forgot-password.tsx` 다국어 대응 및 에러 핸들링 검토
-4. Firebase 이메일 템플릿 커스터마이징 (선택)
-
----
-
 ## 프로젝트 구조
 
 ```
