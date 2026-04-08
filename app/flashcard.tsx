@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors } from '@/src/theme/colors';
-import { useDueCards, invalidateDB } from '@/src/db/hooks';
+import { useDueCards, useExpressionCount, invalidateDB } from '@/src/db/hooks';
 import { updateReview } from '@/src/db/reviews';
 import { calculateNextReview, buttonToQuality, type SRButtonType } from '@/src/lib/sm2';
 import { useStudySessionStore } from '@/src/stores/useStudySessionStore';
@@ -20,6 +20,7 @@ const SR_BUTTONS: { key: SRButtonType; label: string; icon: string; color: strin
 export default function FlashcardScreen() {
   const router = useRouter();
   const { data: cards } = useDueCards();
+  const { data: totalExpressions } = useExpressionCount();
   const { currentCardIndex, isFlipped, sessionScore, totalCards, setIsFlipped, setTotalCards, nextCard, incrementScore, reset } = useStudySessionStore();
 
   useEffect(() => {
@@ -64,13 +65,29 @@ export default function FlashcardScreen() {
   }
 
   if (!card) {
+    const hasNoExpressions = totalExpressions === 0;
     return (
       <View style={styles.completeContainer}>
-        <MaterialIcons name="check-circle" size={64} color={colors.primary} />
-        <Text style={styles.completeTitle}>복습 완료!</Text>
-        <Text style={styles.completeScore}>오늘 복습할 카드가 없어요</Text>
-        <TouchableOpacity style={styles.doneBtn} onPress={() => router.back()}>
-          <Text style={styles.doneBtnText}>돌아가기</Text>
+        <MaterialIcons
+          name={hasNoExpressions ? 'mic-none' : 'check-circle'}
+          size={64}
+          color={hasNoExpressions ? colors.outline : colors.primary}
+        />
+        <Text style={styles.completeTitle}>
+          {hasNoExpressions ? '아직 표현이 없어요' : '오늘 복습 완료!'}
+        </Text>
+        <Text style={styles.completeScore}>
+          {hasNoExpressions
+            ? '녹음을 시작해서 영어 표현을 만들어보세요'
+            : '오늘 복습할 카드를 모두 마쳤어요'}
+        </Text>
+        <TouchableOpacity
+          style={styles.doneBtn}
+          onPress={() => hasNoExpressions ? router.replace('/record') : router.back()}
+        >
+          <Text style={styles.doneBtnText}>
+            {hasNoExpressions ? '녹음 시작하기' : '돌아가기'}
+          </Text>
         </TouchableOpacity>
       </View>
     );

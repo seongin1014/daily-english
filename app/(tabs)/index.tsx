@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/src/theme/colors';
-import { useRecordings, useDueCardCount, useExpressionCount, useTodayExpressionCount, useStreak } from '@/src/db/hooks';
+import { useRecordings, useDueCardCount, useExpressionCount, useTodayExpressionCount, useStreak, useTodayReviewCount } from '@/src/db/hooks';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { FocusPlate } from '@/src/components/ui/FocusPlate';
 import { Card } from '@/src/components/ui/Card';
@@ -19,7 +19,10 @@ export default function HomeScreen() {
   const { data: totalExpressions } = useExpressionCount();
   const { data: todayCount } = useTodayExpressionCount();
   const { data: streak } = useStreak();
+  const { data: todayReviewed } = useTodayReviewCount();
   const { subscription, monthlyUsage, monthlyLimit } = useAppStore();
+  const dailyGoal = 10; // TODO: 설정에서 가져오기
+  const goalProgress = dailyGoal > 0 ? Math.min(1, todayReviewed / dailyGoal) : 0;
   const remaining = Math.max(0, monthlyLimit - monthlyUsage);
 
   const recentRecordings = recordings.slice(0, 3);
@@ -63,10 +66,10 @@ export default function HomeScreen() {
             </View>
             <View style={{ marginTop: 24 }}>
               <View style={styles.goalRow}>
-                <Text style={styles.goalLabel}>주간 목표</Text>
-                <Text style={styles.goalLabel}>80%</Text>
+                <Text style={styles.goalLabel}>오늘 목표</Text>
+                <Text style={styles.goalLabel}>{todayReviewed}/{dailyGoal}</Text>
               </View>
-              <ProgressBar progress={0.8} />
+              <ProgressBar progress={goalProgress} />
             </View>
           </Card>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as AuthSession from 'expo-auth-session';
@@ -13,6 +14,7 @@ WebBrowser.maybeCompleteAuthSession();
 const GOOGLE_WEB_CLIENT_ID = '229206057852-dkn9p135auhqkuegeni5spvc79cl1jbv.apps.googleusercontent.com';
 
 export default function LoginScreen() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleAppleSignIn = async () => {
@@ -129,6 +131,22 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Skip / Browse */}
+        <TouchableOpacity
+          style={styles.skipBtn}
+          onPress={() => {
+            // Set DEV_SKIP flag via app store and navigate
+            const { setUser } = require('@/src/stores/useAppStore').useAppStore.getState();
+            setUser(null);
+            // Manually set authLoading to false to bypass guard
+            require('@/src/stores/useAppStore').useAppStore.setState({ authLoading: false, isAuthenticated: true });
+            router.replace('/');
+          }}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.skipBtnText}>로그인 없이 둘러보기</Text>
+        </TouchableOpacity>
+
         {/* Terms */}
         <Text style={styles.terms}>
           계속하면 서비스 이용약관 및 개인정보 처리방침에{'\n'}동의하는 것으로 간주됩니다.
@@ -150,5 +168,7 @@ const styles = StyleSheet.create({
   appleBtnText: { fontFamily: 'Pretendard-SemiBold', fontSize: 16, color: '#fff' },
   googleBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: colors.surfaceContainerLowest, paddingVertical: 16, borderRadius: 12 },
   googleBtnText: { fontFamily: 'Pretendard-SemiBold', fontSize: 16, color: colors.onSurface },
+  skipBtn: { alignItems: 'center', paddingVertical: 14 },
+  skipBtnText: { fontFamily: 'Pretendard-Medium', fontSize: 14, color: colors.onSurfaceVariant, textDecorationLine: 'underline' },
   terms: { fontFamily: 'Pretendard', fontSize: 11, color: colors.outline, textAlign: 'center', lineHeight: 18 },
 });
