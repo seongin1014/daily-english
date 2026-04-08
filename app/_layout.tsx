@@ -1,58 +1,69 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import * as SecureStore from 'expo-secure-store';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/components/useColorScheme';
+import { ThemeProvider } from '@/src/theme';
+import { getDatabase } from '@/src/db/schema';
+import { resumePendingPipelines } from '@/src/services/pipeline';
+import { useAppStore } from '@/src/stores/useAppStore';
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+export { ErrorBoundary } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
+    'Manrope': require('../assets/fonts/Manrope-Regular.ttf'),
+    'Manrope-Bold': require('../assets/fonts/Manrope-Bold.ttf'),
+    'Manrope-ExtraBold': require('../assets/fonts/Manrope-ExtraBold.ttf'),
+    'Inter': require('../assets/fonts/Inter-Regular.ttf'),
+    'Inter-Medium': require('../assets/fonts/Inter-Medium.ttf'),
+    'Inter-SemiBold': require('../assets/fonts/Inter-SemiBold.ttf'),
+    'Pretendard': require('../assets/fonts/Pretendard-Regular.otf'),
+    'Pretendard-Medium': require('../assets/fonts/Pretendard-Medium.otf'),
+    'Pretendard-SemiBold': require('../assets/fonts/Pretendard-SemiBold.otf'),
+    'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.otf'),
+    'Pretendard-ExtraBold': require('../assets/fonts/Pretendard-ExtraBold.otf'),
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
+  const setApiKeyConfigured = useAppStore(s => s.setApiKeyConfigured);
+
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    async function init() {
+      await getDatabase();
+      const apiKey = await SecureStore.getItemAsync('google_cloud_api_key');
+      setApiKeyConfigured(!!apiKey);
+      resumePendingPipelines().catch(console.error);
     }
+    init();
+  }, []);
+
+  useEffect(() => {
+    if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
-
-  return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  if (!loaded) return null;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+    <ThemeProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="record" options={{ presentation: 'fullScreenModal' }} />
+        <Stack.Screen name="flashcard" options={{ presentation: 'card' }} />
+        <Stack.Screen name="recording/[id]" options={{ presentation: 'card' }} />
+        <Stack.Screen name="quiz/multiple-choice" options={{ presentation: 'card' }} />
+        <Stack.Screen name="quiz/fill-blank" options={{ presentation: 'card' }} />
       </Stack>
     </ThemeProvider>
   );

@@ -1,31 +1,189 @@
-import { StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { colors } from '@/src/theme/colors';
+import { useRecordings, useDueCardCount, useExpressionCount, useTodayExpressionCount, useStreak } from '@/src/db/hooks';
+import { FocusPlate } from '@/src/components/ui/FocusPlate';
+import { Card } from '@/src/components/ui/Card';
+import { ProgressBar } from '@/src/components/ui/ProgressBar';
+import { Badge } from '@/src/components/ui/Badge';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function HomeScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { data: recordings } = useRecordings();
+  const { data: dueCount } = useDueCardCount();
+  const { data: totalExpressions } = useExpressionCount();
+  const { data: todayCount } = useTodayExpressionCount();
+  const { data: streak } = useStreak();
 
-export default function TabOneScreen() {
+  const recentRecordings = recordings.slice(0, 3);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.appTitle}>Daily English</Text>
+            <Text style={styles.subtitle}>우리의 일상을 영어로</Text>
+          </View>
+          <View style={styles.headerIcons}>
+            <TouchableOpacity style={styles.iconBtn}>
+              <MaterialIcons name="search" size={24} color="#1a237e" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconBtn}>
+              <MaterialIcons name="notifications" size={24} color="#1a237e" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Stats Row */}
+        <View style={styles.statsRow}>
+          {/* Streak Card */}
+          <Card variant="surfaceLow" style={styles.streakCard}>
+            <Text style={styles.streakLabel}>연속 학습</Text>
+            <View style={styles.streakValue}>
+              <Text style={styles.streakNumber}>{streak}</Text>
+              <Text style={styles.streakUnit}>일째</Text>
+            </View>
+            <View style={{ marginTop: 24 }}>
+              <View style={styles.goalRow}>
+                <Text style={styles.goalLabel}>주간 목표</Text>
+                <Text style={styles.goalLabel}>80%</Text>
+              </View>
+              <ProgressBar progress={0.8} />
+            </View>
+          </Card>
+
+          {/* Total Expressions */}
+          <Card variant="primary" style={styles.totalCard}>
+            <Text style={styles.totalLabel}>전체 표현</Text>
+            <Text style={styles.totalNumber}>{totalExpressions}</Text>
+            <View style={styles.todayBadge}>
+              <Text style={styles.todayText}>오늘 +{todayCount}</Text>
+              <MaterialIcons name="trending-up" size={14} color="#fff" />
+            </View>
+          </Card>
+        </View>
+
+        {/* Today's Review */}
+        <FocusPlate style={{ marginTop: 16 }}>
+          <View style={styles.reviewHeader}>
+            <Text style={styles.reviewTitle}>오늘의 복습</Text>
+            <MaterialIcons name="menu-book" size={24} color={colors.secondary} />
+          </View>
+          <Text style={styles.reviewDesc}>
+            복습할 카드가 <Text style={{ color: colors.primary, fontFamily: 'Pretendard-Bold' }}>{dueCount}개</Text> 있어요. 꾸준히 복습해서 기억력을 유지하세요!
+          </Text>
+          <TouchableOpacity
+            style={styles.startBtn}
+            onPress={() => router.push('/flashcard')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.startBtnText}>학습 시작하기</Text>
+            <MaterialIcons name="arrow-forward" size={20} color="#fff" />
+          </TouchableOpacity>
+        </FocusPlate>
+
+        {/* Recent Recordings */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>최근 녹음</Text>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/recordings')}>
+            <Text style={styles.viewAll}>전체 보기</Text>
+          </TouchableOpacity>
+        </View>
+
+        {recentRecordings.length === 0 ? (
+          <Card style={{ alignItems: 'center', paddingVertical: 32 }}>
+            <MaterialIcons name="mic-none" size={48} color={colors.outlineVariant} />
+            <Text style={styles.emptyText}>녹음이 아직 없어요</Text>
+            <Text style={styles.emptySubtext}>마이크 버튼을 눌러 시작해보세요!</Text>
+          </Card>
+        ) : (
+          recentRecordings.map((rec) => (
+            <TouchableOpacity
+              key={rec.id}
+              onPress={() => router.push(`/recording/${rec.id}`)}
+              activeOpacity={0.7}
+            >
+              <Card style={styles.recordingItem}>
+                <View style={styles.recordingLeft}>
+                  <View style={styles.recordingIcon}>
+                    <MaterialIcons name="mic" size={24} color={colors.primary} />
+                  </View>
+                  <View>
+                    <Text style={styles.recordingTitle}>{rec.title || `녹음`}</Text>
+                    <Text style={styles.recordingDate}>{new Date(rec.created_at).toLocaleDateString('ko-KR')}</Text>
+                  </View>
+                </View>
+                <Badge variant={rec.status === 'ready' ? 'ready' : rec.status === 'error' ? 'error' : 'processing'} />
+              </Card>
+            </TouchableOpacity>
+          ))
+        )}
+
+        {/* Tip of the Day */}
+        <View style={styles.tipCard}>
+          <Text style={styles.tipLabel}>오늘의 팁</Text>
+          <Text style={styles.tipQuote}>"영어를 공부하지 말고, 영어로 살아보세요."</Text>
+        </View>
+
+        <View style={{ height: 100 }} />
+      </ScrollView>
+
+      {/* Quick Record FAB */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/record')}
+        activeOpacity={0.8}
+      >
+        <MaterialIcons name="mic" size={28} color="#fff" />
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
+  container: { flex: 1, backgroundColor: colors.surface },
+  scroll: { paddingHorizontal: 24, paddingTop: 16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 },
+  appTitle: { fontFamily: 'Manrope-ExtraBold', fontSize: 28, color: '#000666', letterSpacing: -0.8 },
+  subtitle: { fontFamily: 'Inter-Medium', fontSize: 10, color: '#94a3b8', letterSpacing: 2, textTransform: 'uppercase', marginTop: 2 },
+  headerIcons: { flexDirection: 'row', gap: 8 },
+  iconBtn: { padding: 8, borderRadius: 20 },
+  statsRow: { flexDirection: 'row', gap: 12 },
+  streakCard: { flex: 1, padding: 20 },
+  streakLabel: { fontFamily: 'Pretendard-SemiBold', fontSize: 11, color: colors.secondary, letterSpacing: 1 },
+  streakValue: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 8 },
+  streakNumber: { fontFamily: 'Manrope-ExtraBold', fontSize: 48, color: colors.primary, letterSpacing: -1 },
+  streakUnit: { fontFamily: 'Pretendard-Bold', fontSize: 20, color: colors.primaryContainer },
+  goalRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  goalLabel: { fontFamily: 'Pretendard-SemiBold', fontSize: 11, color: colors.onSurfaceVariant, letterSpacing: 0.5 },
+  totalCard: { flex: 1, padding: 20, shadowColor: colors.primary, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 24, elevation: 8 },
+  totalLabel: { fontFamily: 'Pretendard-SemiBold', fontSize: 11, color: 'rgba(255,255,255,0.85)', letterSpacing: 1 },
+  totalNumber: { fontFamily: 'Manrope-ExtraBold', fontSize: 48, color: '#fff', letterSpacing: -1, marginTop: 8 },
+  todayBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12, backgroundColor: 'rgba(255,255,255,0.25)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start' },
+  todayText: { fontFamily: 'Pretendard-SemiBold', fontSize: 11, color: '#fff', letterSpacing: 0.5 },
+  reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  reviewTitle: { fontFamily: 'Pretendard-Bold', fontSize: 18, color: colors.onSurface },
+  reviewDesc: { fontFamily: 'Pretendard', fontSize: 14, color: colors.onSurfaceVariant, lineHeight: 22, marginBottom: 20 },
+  startBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.secondary, paddingVertical: 16, borderRadius: 12 },
+  startBtnText: { fontFamily: 'Pretendard-Bold', fontSize: 16, color: '#fff' },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 28, marginBottom: 16, paddingHorizontal: 4 },
+  sectionTitle: { fontFamily: 'Pretendard-ExtraBold', fontSize: 22, color: colors.primary, letterSpacing: -0.5 },
+  viewAll: { fontFamily: 'Pretendard-SemiBold', fontSize: 13, color: colors.primaryContainer },
+  recordingItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, marginBottom: 8 },
+  recordingLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  recordingIcon: { width: 48, height: 48, borderRadius: 12, backgroundColor: colors.primaryFixed, alignItems: 'center', justifyContent: 'center' },
+  recordingTitle: { fontFamily: 'Pretendard-Bold', fontSize: 15, color: colors.onSurface },
+  recordingDate: { fontFamily: 'Pretendard', fontSize: 12, color: colors.onSurfaceVariant, marginTop: 2 },
+  emptyText: { fontFamily: 'Pretendard-Bold', fontSize: 16, color: colors.onSurfaceVariant, marginTop: 12 },
+  emptySubtext: { fontFamily: 'Pretendard', fontSize: 13, color: colors.outline, marginTop: 4 },
+  tipCard: { marginTop: 32, padding: 32, borderRadius: 28, backgroundColor: colors.primaryContainer, alignItems: 'center' },
+  tipLabel: { fontFamily: 'Pretendard-SemiBold', fontSize: 11, color: 'rgba(255,255,255,0.85)', letterSpacing: 1, marginBottom: 16 },
+  tipQuote: { fontFamily: 'Pretendard-ExtraBold', fontSize: 22, color: '#fff', textAlign: 'center', fontStyle: 'italic', lineHeight: 32 },
+  fab: { position: 'absolute', bottom: 100, right: 24, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.secondary, alignItems: 'center', justifyContent: 'center', shadowColor: 'rgba(172,53,9,0.4)', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 1, shadowRadius: 32, elevation: 12 },
 });
