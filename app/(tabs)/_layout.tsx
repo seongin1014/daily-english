@@ -83,10 +83,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(249,249,249,0.7)',
   },
   tab: {
+    flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 16,
   },

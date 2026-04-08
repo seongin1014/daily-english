@@ -19,8 +19,8 @@ export const unstable_settings = {
 
 SplashScreen.preventAutoHideAsync();
 
-// TODO: Set to false when Firebase is configured with real credentials
-const DEV_SKIP_AUTH = true;
+// Set to true to bypass auth during development
+const DEV_SKIP_AUTH = false;
 
 function useAuthGuard() {
   const segments = useSegments();

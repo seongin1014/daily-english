@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import * as AuthSession from 'expo-auth-session';
 import * as Crypto from 'expo-crypto';
+import * as WebBrowser from 'expo-web-browser';
 import { colors } from '@/src/theme/colors';
 import { signInWithApple, signInWithGoogle } from '@/src/services/firebase';
+
+WebBrowser.maybeCompleteAuthSession();
+
+const GOOGLE_WEB_CLIENT_ID = '229206057852-dkn9p135auhqkuegeni5spvc79cl1jbv.apps.googleusercontent.com';
 
 export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
@@ -39,9 +45,37 @@ export default function LoginScreen() {
   };
 
   const handleGoogleSignIn = async () => {
-    // TODO: Implement with expo-auth-session + Google OAuth
-    // Requires web client ID from Firebase Console
-    Alert.alert('준비 중', 'Google 로그인은 Firebase Console 설정 후 활성화됩니다.');
+    try {
+      setLoading(true);
+
+      const redirectUri = AuthSession.makeRedirectUri({ scheme: 'echoling' });
+
+      const discovery = {
+        authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+        tokenEndpoint: 'https://oauth2.googleapis.com/token',
+      };
+
+      const request = new AuthSession.AuthRequest({
+        clientId: GOOGLE_WEB_CLIENT_ID,
+        redirectUri,
+        scopes: ['openid', 'profile', 'email'],
+        responseType: AuthSession.ResponseType.IdToken,
+        extraParams: {
+          nonce: Math.random().toString(36).substring(2, 10),
+        },
+      });
+
+      const result = await request.promptAsync(discovery);
+
+      if (result.type === 'success' && result.params.id_token) {
+        await signInWithGoogle(result.params.id_token);
+      }
+    } catch (e: any) {
+      console.error('Google Sign-In error:', e);
+      Alert.alert('로그인 실패', 'Google 로그인에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,21 +94,23 @@ export default function LoginScreen() {
 
         {/* Auth Buttons */}
         <View style={styles.buttons}>
-          <TouchableOpacity
-            style={styles.appleBtn}
-            onPress={handleAppleSignIn}
-            activeOpacity={0.8}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <>
-                <MaterialIcons name="apple" size={22} color="#fff" />
-                <Text style={styles.appleBtnText}>Apple로 계속하기</Text>
-              </>
-            )}
-          </TouchableOpacity>
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity
+              style={styles.appleBtn}
+              onPress={handleAppleSignIn}
+              activeOpacity={0.8}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <MaterialIcons name="apple" size={22} color="#fff" />
+                  <Text style={styles.appleBtnText}>Apple로 계속하기</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
             style={styles.googleBtn}
@@ -82,8 +118,14 @@ export default function LoginScreen() {
             activeOpacity={0.8}
             disabled={loading}
           >
-            <MaterialIcons name="login" size={20} color={colors.onSurface} />
-            <Text style={styles.googleBtnText}>Google로 계속하기</Text>
+            {loading ? (
+              <ActivityIndicator color={colors.onSurface} />
+            ) : (
+              <>
+                <MaterialIcons name="login" size={20} color={colors.onSurface} />
+                <Text style={styles.googleBtnText}>Google로 계속하기</Text>
+              </>
+            )}
           </TouchableOpacity>
         </View>
 
