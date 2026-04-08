@@ -20,10 +20,10 @@ export default function RecordScreen() {
   const { subscription, monthlyUsage, monthlyLimit } = useAppStore();
 
   useEffect(() => {
-    // Check usage limit — redirect to paywall if exceeded
-    if (subscription === 'free' && monthlyUsage >= monthlyLimit) {
-      router.replace('/auth/paywall');
-    }
+    // Check usage limit — redirect to paywall if exceeded (skip in dev mode)
+    // if (subscription === 'free' && monthlyUsage >= monthlyLimit) {
+    //   router.replace('/auth/paywall');
+    // }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       reset();

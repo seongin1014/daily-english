@@ -28,7 +28,7 @@ export default function FlashcardScreen() {
   }, [cards.length]);
 
   const card = cards[currentCardIndex];
-  const isComplete = currentCardIndex >= cards.length;
+  const isComplete = totalCards > 0 && currentCardIndex >= cards.length;
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -54,10 +54,10 @@ export default function FlashcardScreen() {
     return (
       <View style={styles.completeContainer}>
         <MaterialIcons name="celebration" size={64} color={colors.secondary} />
-        <Text style={styles.completeTitle}>Session Complete!</Text>
-        <Text style={styles.completeScore}>{sessionScore} / {totalCards} correct</Text>
+        <Text style={styles.completeTitle}>학습 완료!</Text>
+        <Text style={styles.completeScore}>{sessionScore} / {totalCards} 정답</Text>
         <TouchableOpacity style={styles.doneBtn} onPress={() => router.back()}>
-          <Text style={styles.doneBtnText}>Done</Text>
+          <Text style={styles.doneBtnText}>완료</Text>
         </TouchableOpacity>
       </View>
     );
@@ -67,10 +67,10 @@ export default function FlashcardScreen() {
     return (
       <View style={styles.completeContainer}>
         <MaterialIcons name="check-circle" size={64} color={colors.primary} />
-        <Text style={styles.completeTitle}>All caught up!</Text>
-        <Text style={styles.completeScore}>No cards due for review</Text>
+        <Text style={styles.completeTitle}>복습 완료!</Text>
+        <Text style={styles.completeScore}>오늘 복습할 카드가 없어요</Text>
         <TouchableOpacity style={styles.doneBtn} onPress={() => router.back()}>
-          <Text style={styles.doneBtnText}>Go Back</Text>
+          <Text style={styles.doneBtnText}>돌아가기</Text>
         </TouchableOpacity>
       </View>
     );

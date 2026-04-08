@@ -17,26 +17,36 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // TODO: Replace with your Firebase project config
 const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_PROJECT.firebaseapp.com',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_PROJECT.firebasestorage.app',
-  messagingSenderId: 'YOUR_SENDER_ID',
-  appId: 'YOUR_APP_ID',
+  apiKey: 'AIzaSyCYfPVFYtZ0NMY8xigjwf5_o1AtY-ybn_A',
+  authDomain: 'echoling-5b2ef.firebaseapp.com',
+  projectId: 'echoling-5b2ef',
+  storageBucket: 'echoling-5b2ef.firebasestorage.app',
+  messagingSenderId: '229206057852',
+  appId: '1:229206057852:web:c52957b3174e6a6c3b3af9',
 };
 
-// Initialize Firebase (singleton)
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+// Initialize Firebase (singleton) — wrapped in try-catch for dev mode with dummy config
+let app: any;
+let auth: any;
+let db: any;
+let storage: any;
 
-// Auth with AsyncStorage persistence (tokens survive app restart)
-const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+try {
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+  db = getFirestore(app);
+  storage = getStorage(app);
+} catch (e) {
+  console.warn('Firebase init skipped (configure firebaseConfig with real values):', e);
+  // Provide stubs so imports don't crash
+  auth = { currentUser: null } as any;
+  db = null as any;
+  storage = null as any;
+}
 
-export const db = getFirestore(app);
-export const storage = getStorage(app);
-
-export { auth, onAuthStateChanged, type User };
+export { app, auth, db, storage, onAuthStateChanged, type User };
 
 // --- Auth helpers ---
 

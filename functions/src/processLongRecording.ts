@@ -13,8 +13,9 @@ export const processLongRecording = onRequest(
   {
     region: "asia-northeast3",
     memory: "512MiB",
-    timeoutSeconds: 540, // 9 minutes for long audio
+    timeoutSeconds: 540,
     minInstances: 0,
+    secrets: ["GOOGLE_CLOUD_API_KEY"],
   },
   async (req, res) => {
     if (req.method !== "POST") {

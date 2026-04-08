@@ -14,6 +14,7 @@ export const processRecording = onRequest(
     memory: "512MiB",
     timeoutSeconds: 120,
     minInstances: 0,
+    secrets: ["GOOGLE_CLOUD_API_KEY"],
   },
   async (req, res) => {
     if (req.method !== "POST") {

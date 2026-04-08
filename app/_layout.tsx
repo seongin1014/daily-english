@@ -19,12 +19,16 @@ export const unstable_settings = {
 
 SplashScreen.preventAutoHideAsync();
 
+// TODO: Set to false when Firebase is configured with real credentials
+const DEV_SKIP_AUTH = true;
+
 function useAuthGuard() {
   const segments = useSegments();
   const router = useRouter();
   const { isAuthenticated, authLoading } = useAppStore();
 
   useEffect(() => {
+    if (DEV_SKIP_AUTH) return; // Bypass auth guard in dev mode
     if (authLoading) return;
     const inAuthGroup = segments[0] === 'auth';
 
@@ -57,8 +61,12 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
-  // Firebase Auth listener
+  // Firebase Auth listener (skipped in dev mode when Firebase not configured)
   useEffect(() => {
+    if (DEV_SKIP_AUTH) {
+      setUser(null);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
 

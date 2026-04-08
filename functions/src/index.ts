@@ -13,7 +13,7 @@ import { verifyAuth } from "./middleware/auth";
 const GOOGLE_TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2";
 
 export const translate = onRequest(
-  { region: "asia-northeast3", memory: "256MiB", timeoutSeconds: 60 },
+  { region: "asia-northeast3", memory: "256MiB", timeoutSeconds: 60, secrets: ["GOOGLE_CLOUD_API_KEY"] },
   async (req, res) => {
     if (req.method !== "POST") {
       res.status(405).json({ error: "Method not allowed" });

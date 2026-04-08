@@ -27,9 +27,9 @@ export default function StudyHub() {
 
         {/* Today's Review CTA */}
         <View style={styles.ctaCard}>
-          <Text style={styles.ctaLabel}>READY TO STUDY?</Text>
-          <Text style={styles.ctaTitle}>오늘의 복습 - {dueCount}개 남음</Text>
-          <Text style={styles.ctaDesc}>Yesterday's vocabulary is still fresh. Solidify your memory with a quick 5-minute review session.</Text>
+          <Text style={styles.ctaLabel}>오늘의 학습</Text>
+          <Text style={styles.ctaTitle}>복습 카드 {dueCount}개</Text>
+          <Text style={styles.ctaDesc}>어제 배운 표현이 아직 기억에 남아있을 때, 5분만 투자해서 복습해보세요.</Text>
           <TouchableOpacity
             style={styles.ctaBtn}
             onPress={() => router.push('/flashcard')}
@@ -41,7 +41,7 @@ export default function StudyHub() {
 
         {/* Mastery Levels */}
         <Card style={styles.masteryCard}>
-          <Text style={styles.sectionTitle}>Mastery Levels</Text>
+          <Text style={styles.sectionTitle}>숙달 수준</Text>
           <View style={styles.donutContainer}>
             <View style={styles.donutOuter}>
               <Text style={styles.donutPct}>{masteryPct}%</Text>
@@ -51,32 +51,37 @@ export default function StudyHub() {
           <View style={styles.masteryRow}>
             <View style={styles.masteryItem}>
               <Text style={[styles.masteryCount, { color: colors.primary }]}>{stats.mastered}</Text>
-              <Text style={styles.masteryLabel}>Mastered</Text>
+              <Text style={styles.masteryLabel}>완료</Text>
             </View>
             <View style={styles.masteryItem}>
               <Text style={[styles.masteryCount, { color: colors.secondary }]}>{stats.learning}</Text>
-              <Text style={styles.masteryLabel}>Learning</Text>
+              <Text style={styles.masteryLabel}>학습중</Text>
             </View>
             <View style={styles.masteryItem}>
               <Text style={[styles.masteryCount, { color: colors.outline }]}>{stats.newCards}</Text>
-              <Text style={styles.masteryLabel}>New</Text>
+              <Text style={styles.masteryLabel}>새 표현</Text>
             </View>
           </View>
         </Card>
 
-        {/* Study Time */}
+        {/* Study Time — shows actual data when available */}
         <Card style={styles.timeCard}>
           <View style={styles.timeHeader}>
-            <Text style={styles.sectionTitle}>Study Time</Text>
-            <Text style={styles.timeAvg}>Weekly Average: 45m</Text>
+            <Text style={styles.sectionTitle}>학습 현황</Text>
+            <Text style={styles.timeAvg}>총 {stats.total}개 표현</Text>
           </View>
           <View style={styles.weekRow}>
-            {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((day, i) => (
-              <View key={day} style={styles.dayCol}>
-                <View style={[styles.dayBar, { height: 8 + Math.random() * 40, backgroundColor: i === 3 ? colors.secondary : colors.outlineVariant }]} />
-                <Text style={[styles.dayLabel, i === 3 && { fontFamily: 'Inter-SemiBold', color: colors.onSurface }]}>{day}</Text>
-              </View>
-            ))}
+            {['월', '화', '수', '목', '금', '토', '일'].map((day, i) => {
+              const today = new Date().getDay();
+              const dayIndex = i === 6 ? 0 : i + 1; // 월=1 ... 일=0
+              const isToday = dayIndex === today;
+              return (
+                <View key={day} style={styles.dayCol}>
+                  <View style={[styles.dayBar, { height: isToday ? 32 : 8, backgroundColor: isToday ? colors.secondary : colors.outlineVariant }]} />
+                  <Text style={[styles.dayLabel, isToday && { fontFamily: 'Pretendard-Bold', color: colors.onSurface }]}>{day}</Text>
+                </View>
+              );
+            })}
           </View>
         </Card>
 
@@ -115,9 +120,9 @@ export default function StudyHub() {
 
         {/* Wisdom Quote */}
         <View style={styles.wisdomCard}>
-          <Text style={styles.wisdomTitle}>Today's Wisdom</Text>
-          <Text style={styles.wisdomQuote}>"Language is the road map of a culture. It tells you where its people come from and where they are going."</Text>
-          <Text style={styles.wisdomAuthor}>Teacher Sarah - Daily Tip</Text>
+          <Text style={styles.wisdomTitle}>오늘의 한마디</Text>
+          <Text style={styles.wisdomQuote}>"언어는 문화의 지도입니다. 그 사람들이 어디에서 왔고, 어디로 가는지를 알려줍니다."</Text>
+          <Text style={styles.wisdomAuthor}>EchoLing 데일리 팁</Text>
         </View>
 
         <View style={{ height: 100 }} />

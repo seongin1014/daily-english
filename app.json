@@ -18,13 +18,14 @@
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Daily English needs microphone access to record your conversations for English learning."
       },
-      "bundleIdentifier": "com.seongin.daily-english"
+      "bundleIdentifier": "com.monik.echoling"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "package": "com.monik.echoling",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
