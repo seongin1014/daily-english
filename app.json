@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "daily-english",
-    "slug": "daily-english",
+    "name": "EchoLing",
+    "slug": "echoling",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "dailyenglish",
+    "scheme": "echoling",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {

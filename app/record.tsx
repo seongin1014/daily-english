@@ -134,7 +134,7 @@ export default function RecordScreen() {
         <TouchableOpacity onPress={cancel} style={styles.backBtn}>
           <MaterialIcons name="arrow-back" size={24} color="#818cf8" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Daily English</Text>
+        <Text style={styles.headerTitle}>EchoLing</Text>
         <View style={{ width: 40 }} />
       </View>
 

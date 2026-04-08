@@ -49,8 +49,8 @@ export default function LoginScreen() {
       <View style={styles.content}>
         {/* Logo Area */}
         <View style={styles.logoArea}>
-          <Text style={styles.appName}>Daily English</Text>
-          <Text style={styles.tagline}>우리의 일상을 영어로</Text>
+          <Text style={styles.appName}>EchoLing</Text>
+          <Text style={styles.tagline}>일상이 영어로 돌아오다</Text>
         </View>
 
         {/* Description */}

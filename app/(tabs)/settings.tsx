@@ -156,7 +156,7 @@ export default function SettingsScreen() {
         </TouchableOpacity>
 
         {/* Version */}
-        <Text style={styles.version}>DAILY ENGLISH VERSION 1.1.0</Text>
+        <Text style={styles.version}>ECHOLING VERSION 1.1.0</Text>
         <Text style={styles.versionSub}>ACADEMIC ATELIER DESIGN SYSTEM</Text>
 
         <View style={{ height: 120 }} />

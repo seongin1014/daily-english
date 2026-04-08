@@ -30,8 +30,8 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.appTitle}>Daily English</Text>
-            <Text style={styles.subtitle}>우리의 일상을 영어로</Text>
+            <Text style={styles.appTitle}>EchoLing</Text>
+            <Text style={styles.subtitle}>일상이 영어로 돌아오다</Text>
           </View>
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconBtn}>
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface },
   scroll: { paddingHorizontal: 24, paddingTop: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 },
-  appTitle: { fontFamily: 'Manrope-ExtraBold', fontSize: 28, color: '#000666', letterSpacing: -0.8 },
+  appTitle: { fontFamily: 'Manrope-ExtraBold', fontSize: 28, color: '#121858', letterSpacing: -0.8 },
   subtitle: { fontFamily: 'Inter-Medium', fontSize: 10, color: '#94a3b8', letterSpacing: 2, textTransform: 'uppercase', marginTop: 2 },
   headerIcons: { flexDirection: 'row', gap: 8 },
   iconBtn: { padding: 8, borderRadius: 20 },

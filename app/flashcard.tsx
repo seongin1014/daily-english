@@ -83,7 +83,7 @@ export default function FlashcardScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Daily English</Text>
+        <Text style={styles.headerTitle}>EchoLing</Text>
         <Text style={styles.headerLabel}>FLASHCARDS</Text>
       </View>
 

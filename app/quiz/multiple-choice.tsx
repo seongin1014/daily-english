@@ -85,7 +85,7 @@ export default function MultipleChoiceQuiz() {
         <TouchableOpacity onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Daily English</Text>
+        <Text style={styles.headerTitle}>EchoLing</Text>
         <View style={styles.scoreBox}>
           <MaterialIcons name="local-fire-department" size={18} color={colors.secondary} />
           <Text style={styles.scoreText}>{score * 100}</Text>

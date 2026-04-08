@@ -103,7 +103,7 @@ export default function FillBlankQuiz() {
         <TouchableOpacity onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Daily English</Text>
+        <Text style={styles.headerTitle}>EchoLing</Text>
         <View style={{ width: 40 }} />
       </View>
 
