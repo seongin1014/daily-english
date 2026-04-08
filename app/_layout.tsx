@@ -1,13 +1,14 @@
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import * as SecureStore from 'expo-secure-store';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { ThemeProvider } from '@/src/theme';
 import { getDatabase } from '@/src/db/schema';
 import { resumePendingPipelines } from '@/src/services/pipeline';
+import { auth, onAuthStateChanged, getMonthlyUsage } from '@/src/services/firebase';
+import { configureRevenueCat, checkSubscription } from '@/src/services/subscription';
 import { useAppStore } from '@/src/stores/useAppStore';
 
 export { ErrorBoundary } from 'expo-router';
@@ -17,6 +18,23 @@ export const unstable_settings = {
 };
 
 SplashScreen.preventAutoHideAsync();
+
+function useAuthGuard() {
+  const segments = useSegments();
+  const router = useRouter();
+  const { isAuthenticated, authLoading } = useAppStore();
+
+  useEffect(() => {
+    if (authLoading) return;
+    const inAuthGroup = segments[0] === 'auth';
+
+    if (!isAuthenticated && !inAuthGroup) {
+      router.replace('/auth/login');
+    } else if (isAuthenticated && inAuthGroup) {
+      router.replace('/');
+    }
+  }, [isAuthenticated, authLoading, segments]);
+}
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -33,20 +51,43 @@ export default function RootLayout() {
     'Pretendard-ExtraBold': require('../assets/fonts/Pretendard-ExtraBold.otf'),
   });
 
-  const setApiKeyConfigured = useAppStore(s => s.setApiKeyConfigured);
+  const { setUser, setSubscription, setMonthlyUsage } = useAppStore();
 
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
+  // Firebase Auth listener
   useEffect(() => {
-    async function init() {
-      await getDatabase();
-      const apiKey = await SecureStore.getItemAsync('google_cloud_api_key');
-      setApiKeyConfigured(!!apiKey);
-      resumePendingPipelines().catch(console.error);
-    }
-    init();
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setUser(user);
+
+      if (user) {
+        await getDatabase();
+
+        // Configure RevenueCat with Firebase UID
+        try {
+          await configureRevenueCat(user.uid);
+          const sub = await checkSubscription();
+          setSubscription(sub);
+        } catch (e) {
+          console.error('RevenueCat config error:', e);
+        }
+
+        // Load monthly usage
+        try {
+          const usage = await getMonthlyUsage(user.uid);
+          setMonthlyUsage(usage.recordingCount, usage.limit);
+        } catch (e) {
+          console.error('Usage load error:', e);
+        }
+
+        // Resume pending pipelines
+        resumePendingPipelines().catch(console.error);
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
   useEffect(() => {
@@ -57,14 +98,24 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="record" options={{ presentation: 'fullScreenModal' }} />
-        <Stack.Screen name="flashcard" options={{ presentation: 'card' }} />
-        <Stack.Screen name="recording/[id]" options={{ presentation: 'card' }} />
-        <Stack.Screen name="quiz/multiple-choice" options={{ presentation: 'card' }} />
-        <Stack.Screen name="quiz/fill-blank" options={{ presentation: 'card' }} />
-      </Stack>
+      <AuthGuardedStack />
     </ThemeProvider>
+  );
+}
+
+function AuthGuardedStack() {
+  useAuthGuard();
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="auth/login" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
+      <Stack.Screen name="auth/paywall" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="record" options={{ presentation: 'fullScreenModal' }} />
+      <Stack.Screen name="flashcard" options={{ presentation: 'card' }} />
+      <Stack.Screen name="recording/[id]" options={{ presentation: 'card' }} />
+      <Stack.Screen name="quiz/multiple-choice" options={{ presentation: 'card' }} />
+      <Stack.Screen name="quiz/fill-blank" options={{ presentation: 'card' }} />
+    </Stack>
   );
 }

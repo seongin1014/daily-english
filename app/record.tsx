@@ -3,12 +3,12 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
-import * as SecureStore from 'expo-secure-store';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createRecording } from '@/src/db/recordings';
 import { processRecording } from '@/src/services/pipeline';
 import { invalidateDB } from '@/src/db/hooks';
 import { useRecordingSessionStore } from '@/src/stores/useRecordingSessionStore';
+import { useAppStore } from '@/src/stores/useAppStore';
 
 const MAX_DURATION = 300; // 5 minutes
 
@@ -17,25 +17,18 @@ export default function RecordScreen() {
   const recordingRef = useRef<Audio.Recording | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { isRecording, elapsedTime, currentAmplitude, setIsRecording, setElapsedTime, setCurrentAmplitude, reset } = useRecordingSessionStore();
+  const { subscription, monthlyUsage, monthlyLimit } = useAppStore();
 
   useEffect(() => {
-    checkApiKey();
+    // Check usage limit — redirect to paywall if exceeded
+    if (subscription === 'free' && monthlyUsage >= monthlyLimit) {
+      router.replace('/auth/paywall');
+    }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       reset();
     };
   }, []);
-
-  const checkApiKey = async () => {
-    const key = await SecureStore.getItemAsync('google_cloud_api_key');
-    if (!key) {
-      Alert.alert(
-        'API 키 필요',
-        '녹음은 가능하지만, 영어 변환을 위해 Settings에서 Google Cloud API 키를 설정해주세요.',
-        [{ text: '확인' }]
-      );
-    }
-  };
 
   const startRecording = useCallback(async () => {
     try {

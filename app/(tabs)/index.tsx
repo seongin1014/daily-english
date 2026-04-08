@@ -5,6 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/src/theme/colors';
 import { useRecordings, useDueCardCount, useExpressionCount, useTodayExpressionCount, useStreak } from '@/src/db/hooks';
+import { useAppStore } from '@/src/stores/useAppStore';
 import { FocusPlate } from '@/src/components/ui/FocusPlate';
 import { Card } from '@/src/components/ui/Card';
 import { ProgressBar } from '@/src/components/ui/ProgressBar';
@@ -18,6 +19,8 @@ export default function HomeScreen() {
   const { data: totalExpressions } = useExpressionCount();
   const { data: todayCount } = useTodayExpressionCount();
   const { data: streak } = useStreak();
+  const { subscription, monthlyUsage, monthlyLimit } = useAppStore();
+  const remaining = Math.max(0, monthlyLimit - monthlyUsage);
 
   const recentRecordings = recordings.slice(0, 3);
 
@@ -38,6 +41,15 @@ export default function HomeScreen() {
               <MaterialIcons name="notifications" size={24} color="#1a237e" />
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* Usage Badge */}
+        <View style={styles.usageBadge}>
+          {subscription === 'pro' ? (
+            <Text style={styles.usagePro}>Pro</Text>
+          ) : (
+            <Text style={styles.usageFree}>이번 달 {remaining}회 남음</Text>
+          )}
         </View>
 
         {/* Stats Row */}
@@ -185,5 +197,8 @@ const styles = StyleSheet.create({
   tipCard: { marginTop: 32, padding: 32, borderRadius: 28, backgroundColor: colors.primaryContainer, alignItems: 'center' },
   tipLabel: { fontFamily: 'Pretendard-SemiBold', fontSize: 11, color: 'rgba(255,255,255,0.85)', letterSpacing: 1, marginBottom: 16 },
   tipQuote: { fontFamily: 'Pretendard-ExtraBold', fontSize: 22, color: '#fff', textAlign: 'center', fontStyle: 'italic', lineHeight: 32 },
+  usageBadge: { alignSelf: 'flex-end', marginBottom: 12 },
+  usagePro: { fontFamily: 'Pretendard-Bold', fontSize: 12, color: colors.secondary, backgroundColor: colors.secondaryFixed, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, overflow: 'hidden' },
+  usageFree: { fontFamily: 'Pretendard-Medium', fontSize: 12, color: colors.onSurfaceVariant, backgroundColor: colors.surfaceContainerLow, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, overflow: 'hidden' },
   fab: { position: 'absolute', bottom: 100, right: 24, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.secondary, alignItems: 'center', justifyContent: 'center', shadowColor: 'rgba(172,53,9,0.4)', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 1, shadowRadius: 32, elevation: 12 },
 });
