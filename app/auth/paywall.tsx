@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors } from '@/src/theme/colors';
+import { useTheme } from '@/src/theme';
 import { getOfferings, purchasePackage, restorePurchases } from '@/src/services/subscription';
 import { useAppStore } from '@/src/stores/useAppStore';
 import type { PurchasesPackage } from 'react-native-purchases';
 
 export default function PaywallScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const setSubscription = useAppStore(s => s.setSubscription);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     loadOfferings();
@@ -125,7 +128,7 @@ export default function PaywallScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface },
   closeBtn: { position: 'absolute', top: 60, right: 24, zIndex: 10, padding: 8 },
   content: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },

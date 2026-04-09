@@ -1,27 +1,30 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { colors } from '@/src/theme/colors';
+import { useTheme } from '@/src/theme';
 import { useDueCards, useExpressionCount, invalidateDB } from '@/src/db/hooks';
 import { updateReview } from '@/src/db/reviews';
 import { calculateNextReview, buttonToQuality, type SRButtonType } from '@/src/lib/sm2';
 import { useStudySessionStore } from '@/src/stores/useStudySessionStore';
 import { ProgressBar } from '@/src/components/ui/ProgressBar';
 
-const SR_BUTTONS: { key: SRButtonType; label: string; icon: string; color: string; bg: string }[] = [
-  { key: 'again', label: '다시', icon: 'refresh', color: colors.error, bg: colors.surfaceContainerLow },
-  { key: 'hard', label: '어려움', icon: 'sentiment-neutral', color: colors.secondary, bg: colors.surfaceContainerLow },
-  { key: 'good', label: '괜찮음', icon: 'sentiment-satisfied', color: colors.primary, bg: colors.primaryFixed },
-  { key: 'easy', label: '쉬움', icon: 'sentiment-very-satisfied', color: colors.primaryContainer, bg: colors.surfaceContainerLow },
-];
-
 export default function FlashcardScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const { data: cards } = useDueCards();
   const { data: totalExpressions } = useExpressionCount();
   const { currentCardIndex, isFlipped, sessionScore, totalCards, setIsFlipped, setTotalCards, nextCard, incrementScore, reset } = useStudySessionStore();
+
+  const SR_BUTTONS: { key: SRButtonType; label: string; icon: string; color: string; bg: string }[] = useMemo(() => [
+    { key: 'again', label: '다시', icon: 'refresh', color: colors.error, bg: colors.surfaceContainerLow },
+    { key: 'hard', label: '어려움', icon: 'sentiment-neutral', color: colors.secondary, bg: colors.surfaceContainerLow },
+    { key: 'good', label: '괜찮음', icon: 'sentiment-satisfied', color: colors.primary, bg: colors.primaryFixed },
+    { key: 'easy', label: '쉬움', icon: 'sentiment-very-satisfied', color: colors.primaryContainer, bg: colors.surfaceContainerLow },
+  ], [colors]);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     if (cards.length > 0) setTotalCards(cards.length);
@@ -160,11 +163,11 @@ export default function FlashcardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface, paddingTop: 60 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, marginBottom: 24 },
-  headerTitle: { fontFamily: 'Manrope-Bold', fontSize: 20, color: '#1a237e' },
-  headerLabel: { fontFamily: 'Inter-Medium', fontSize: 11, color: '#94a3b8', letterSpacing: 1 },
+  headerTitle: { fontFamily: 'Manrope-Bold', fontSize: 20, color: colors.primaryContainer },
+  headerLabel: { fontFamily: 'Inter-Medium', fontSize: 11, color: colors.onSurfaceVariant, letterSpacing: 1 },
   progressRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingHorizontal: 24, marginBottom: 8 },
   progressText: { fontFamily: 'Manrope-ExtraBold', fontSize: 24, color: colors.primary },
   progressBold: { fontSize: 24 },

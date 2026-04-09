@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors } from '@/src/theme/colors';
+import { useTheme } from '@/src/theme';
 import { useDueCardCount, useStudyStats, useTodayReviewCount, useWeeklyActivity, useHardestExpressions } from '@/src/db/hooks';
 import { Card } from '@/src/components/ui/Card';
 
 export default function StudyHub() {
+  const { colors } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: dueCount } = useDueCardCount();
@@ -18,6 +19,8 @@ export default function StudyHub() {
   const masteryPct = stats.total > 0 ? Math.round((stats.mastered / stats.total) * 100) : 0;
   const maxWeekly = Math.max(...weeklyActivity, 1);
   const todayDayOfWeek = new Date().getDay();
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -153,12 +156,12 @@ export default function StudyHub() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface },
   scroll: { paddingHorizontal: 24, paddingTop: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   title: { fontFamily: 'Manrope-Bold', fontSize: 20, color: colors.primary },
-  ctaCard: { backgroundColor: colors.surfaceContainerLowest, borderRadius: 20, padding: 24, marginBottom: 20, shadowColor: '#1a1c1c', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 16, elevation: 2 },
+  ctaCard: { backgroundColor: colors.surfaceContainerLowest, borderRadius: 20, padding: 24, marginBottom: 20, shadowColor: colors.onSurface, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 16, elevation: 2 },
   ctaLabel: { fontFamily: 'Inter-SemiBold', fontSize: 10, color: colors.secondary, letterSpacing: 2, marginBottom: 8 },
   ctaTitle: { fontFamily: 'Manrope-ExtraBold', fontSize: 24, color: colors.onSurface, lineHeight: 32, marginBottom: 8 },
   ctaDesc: { fontFamily: 'Inter', fontSize: 14, color: colors.onSurfaceVariant, lineHeight: 22, marginBottom: 20 },

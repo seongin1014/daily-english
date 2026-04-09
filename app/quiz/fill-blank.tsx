@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Keyboa
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { colors } from '@/src/theme/colors';
+import { useTheme } from '@/src/theme';
 import { useExpressions, invalidateDB } from '@/src/db/hooks';
 import { saveQuizResult } from '@/src/db/quizzes';
 import { ProgressBar } from '@/src/components/ui/ProgressBar';
@@ -20,6 +20,7 @@ function generateFillBlank(english: string): { sentence: string; answer: string 
 }
 
 export default function FillBlankQuiz() {
+  const { colors } = useTheme();
   const router = useRouter();
   const { data: allExpressions } = useExpressions();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -38,6 +39,8 @@ export default function FillBlankQuiz() {
       .filter(Boolean)
       .slice(0, 10) as { expression: typeof allExpressions[0]; sentence: string; answer: string }[];
   }, [allExpressions]);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const question = questions[currentIndex];
   const total = questions.length;
@@ -168,10 +171,10 @@ export default function FillBlankQuiz() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface, paddingTop: 60 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, marginBottom: 16 },
-  headerTitle: { fontFamily: 'Manrope-Bold', fontSize: 20, color: '#1a237e' },
+  headerTitle: { fontFamily: 'Manrope-Bold', fontSize: 20, color: colors.primaryContainer },
   progressRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 24, marginBottom: 8 },
   progressLabel: { fontFamily: 'Inter-SemiBold', fontSize: 11, color: colors.onSurfaceVariant, letterSpacing: 1.5 },
   progressPct: { fontFamily: 'Inter-SemiBold', fontSize: 11, color: colors.secondary, letterSpacing: 1 },
@@ -182,8 +185,8 @@ const styles = StyleSheet.create({
   sentenceText: { fontFamily: 'Manrope-Bold', fontSize: 22, color: colors.onSurface, lineHeight: 32 },
   hintText: { fontFamily: 'Inter', fontSize: 14, color: colors.onSurfaceVariant, marginTop: 12 },
   input: { backgroundColor: colors.surfaceContainerLowest, borderRadius: 12, paddingHorizontal: 20, paddingVertical: 18, fontFamily: 'Inter', fontSize: 18, color: colors.onSurface, marginBottom: 8, borderWidth: 2, borderColor: 'transparent' },
-  inputCorrect: { borderColor: '#16a34a', backgroundColor: '#f0fdf4' },
-  inputWrong: { borderColor: colors.error, backgroundColor: '#fef2f2' },
+  inputCorrect: { borderColor: colors.success, backgroundColor: colors.successContainer },
+  inputWrong: { borderColor: colors.error, backgroundColor: colors.errorContainer },
   correctAnswer: { fontFamily: 'Inter-Medium', fontSize: 13, color: colors.secondary, marginBottom: 16, paddingLeft: 4 },
   submitBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.secondary, paddingVertical: 18, borderRadius: 12, marginTop: 16 },
   submitBtnText: { fontFamily: 'Manrope-Bold', fontSize: 16, color: '#fff' },

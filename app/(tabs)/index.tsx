@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '@/src/theme/colors';
+import { useTheme } from '@/src/theme';
 import { useRecordings, useDueCardCount, useExpressionCount, useTodayExpressionCount, useStreak, useTodayReviewCount } from '@/src/db/hooks';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { FocusPlate } from '@/src/components/ui/FocusPlate';
@@ -12,6 +12,7 @@ import { ProgressBar } from '@/src/components/ui/ProgressBar';
 import { Badge } from '@/src/components/ui/Badge';
 
 export default function HomeScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: recordings } = useRecordings();
@@ -24,6 +25,8 @@ export default function HomeScreen() {
   const dailyGoal = 10; // TODO: 설정에서 가져오기
   const goalProgress = dailyGoal > 0 ? Math.min(1, todayReviewed / dailyGoal) : 0;
   const remaining = Math.max(0, monthlyLimit - monthlyUsage);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const recentRecordings = recordings.slice(0, 3);
 
@@ -38,10 +41,10 @@ export default function HomeScreen() {
           </View>
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconBtn}>
-              <MaterialIcons name="search" size={24} color="#1a237e" />
+              <MaterialIcons name="search" size={24} color={colors.primary} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtn}>
-              <MaterialIcons name="notifications" size={24} color="#1a237e" />
+              <MaterialIcons name="notifications" size={24} color={colors.primary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -161,12 +164,12 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface },
   scroll: { paddingHorizontal: 24, paddingTop: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 },
-  appTitle: { fontFamily: 'Manrope-ExtraBold', fontSize: 28, color: '#121858', letterSpacing: -0.8 },
-  subtitle: { fontFamily: 'Inter-Medium', fontSize: 10, color: '#94a3b8', letterSpacing: 2, textTransform: 'uppercase', marginTop: 2 },
+  appTitle: { fontFamily: 'Manrope-ExtraBold', fontSize: 28, color: colors.primary, letterSpacing: -0.8 },
+  subtitle: { fontFamily: 'Inter-Medium', fontSize: 10, color: colors.onSurfaceVariant, letterSpacing: 2, textTransform: 'uppercase', marginTop: 2 },
   headerIcons: { flexDirection: 'row', gap: 8 },
   iconBtn: { padding: 8, borderRadius: 20 },
   statsRow: { flexDirection: 'row', gap: 12 },

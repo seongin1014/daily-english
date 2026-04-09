@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -6,7 +6,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as AuthSession from 'expo-auth-session';
 import * as Crypto from 'expo-crypto';
 import * as WebBrowser from 'expo-web-browser';
-import { colors } from '@/src/theme/colors';
+import { useTheme } from '@/src/theme';
 import { signInWithApple, signInWithGoogle } from '@/src/services/firebase';
 import { useAppStore } from '@/src/stores/useAppStore';
 
@@ -15,8 +15,11 @@ WebBrowser.maybeCompleteAuthSession();
 const GOOGLE_WEB_CLIENT_ID = '229206057852-dkn9p135auhqkuegeni5spvc79cl1jbv.apps.googleusercontent.com';
 
 export default function LoginScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const handleAppleSignIn = async () => {
     try {
@@ -153,7 +156,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface },
   content: { flex: 1, justifyContent: 'center', paddingHorizontal: 32 },
   logoArea: { alignItems: 'center', marginBottom: 32 },

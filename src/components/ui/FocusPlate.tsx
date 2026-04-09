@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, type ViewStyle } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme';
 import { borderRadius, ambientShadow } from '../../theme/spacing';
 
 interface FocusPlateProps {
@@ -9,10 +9,11 @@ interface FocusPlateProps {
   accentColor?: string;
 }
 
-export function FocusPlate({ children, style, accentColor = colors.primaryContainer }: FocusPlateProps) {
+export function FocusPlate({ children, style, accentColor }: FocusPlateProps) {
+  const { colors } = useTheme();
   return (
-    <View style={[styles.container, style]}>
-      <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
+    <View style={[styles.container, { backgroundColor: colors.surfaceContainerLowest }, style]}>
+      <View style={[styles.accentBar, { backgroundColor: accentColor ?? colors.primaryContainer }]} />
       <View style={styles.content}>{children}</View>
     </View>
   );
@@ -20,7 +21,6 @@ export function FocusPlate({ children, style, accentColor = colors.primaryContai
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surfaceContainerLowest,
     borderRadius: borderRadius.xl,
     flexDirection: 'row',
     overflow: 'hidden',

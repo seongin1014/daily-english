@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors } from '@/src/theme/colors';
+import { useTheme } from '@/src/theme';
 import { useRecordings } from '@/src/db/hooks';
 import { Badge } from '@/src/components/ui/Badge';
 import type { Recording } from '@/src/types/recording';
 
 export default function RecordingsScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: recordings } = useRecordings();
   const [search, setSearch] = useState('');
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const filtered = search
     ? recordings.filter(r => r.title?.toLowerCase().includes(search.toLowerCase()))
@@ -117,7 +120,7 @@ export default function RecordingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface, paddingHorizontal: 24 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16 },
   title: { fontFamily: 'Manrope-Bold', fontSize: 18, color: colors.onSurface },

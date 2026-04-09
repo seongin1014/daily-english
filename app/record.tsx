@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from '@/src/theme';
 import { createRecording } from '@/src/db/recordings';
 import { processRecording } from '@/src/services/pipeline';
 import { invalidateDB } from '@/src/db/hooks';
@@ -13,11 +14,13 @@ import { useAppStore } from '@/src/stores/useAppStore';
 const MAX_DURATION = 300; // 5 minutes
 
 export default function RecordScreen() {
+  const { colors } = useTheme();
   const router = useRouter();
   const recordingRef = useRef<Audio.Recording | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { isRecording, elapsedTime, currentAmplitude, setIsRecording, setElapsedTime, setCurrentAmplitude, reset } = useRecordingSessionStore();
   const { subscription, monthlyUsage, monthlyLimit } = useAppStore();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     // Check usage limit — redirect to paywall if exceeded (skip in dev mode)
@@ -132,7 +135,7 @@ export default function RecordScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={cancel} style={styles.backBtn}>
-          <MaterialIcons name="arrow-back" size={24} color="#818cf8" />
+          <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>EchoLing</Text>
         <View style={{ width: 40 }} />
@@ -169,7 +172,7 @@ export default function RecordScreen() {
                 style={[
                   styles.waveBar,
                   { height: h },
-                  i % 3 === 0 && { backgroundColor: '#ac3509' },
+                  i % 3 === 0 && { backgroundColor: colors.secondary },
                 ]}
               />
             );
@@ -196,23 +199,23 @@ export default function RecordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a1a' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 60, paddingBottom: 16 },
   backBtn: { padding: 8 },
-  headerTitle: { fontFamily: 'Manrope-Bold', fontSize: 20, color: '#818cf8', letterSpacing: -0.5 },
+  headerTitle: { fontFamily: 'Manrope-Bold', fontSize: 20, color: colors.primary, letterSpacing: -0.5 },
   content: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   headline: { fontFamily: 'Manrope-ExtraBold', fontSize: 28, color: '#fff', textAlign: 'center', letterSpacing: -0.5 },
-  subtitle: { fontFamily: 'Inter-Medium', fontSize: 12, color: '#94a3b8', letterSpacing: 2, textTransform: 'uppercase', marginTop: 8 },
+  subtitle: { fontFamily: 'Inter-Medium', fontSize: 12, color: colors.onSurfaceVariant, letterSpacing: 2, textTransform: 'uppercase', marginTop: 8 },
   timer: { fontFamily: 'Manrope-ExtraBold', fontSize: 64, color: '#fff', letterSpacing: -2, marginTop: 40 },
-  timerAccent: { color: '#ac3509' },
-  micBtn: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#ac3509', alignItems: 'center', justifyContent: 'center', marginTop: 40, shadowColor: 'rgba(172,53,9,0.3)', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 40, elevation: 12 },
+  timerAccent: { color: colors.secondary },
+  micBtn: { width: 120, height: 120, borderRadius: 60, backgroundColor: colors.secondary, alignItems: 'center', justifyContent: 'center', marginTop: 40, shadowColor: 'rgba(172,53,9,0.3)', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 40, elevation: 12 },
   micBtnActive: { backgroundColor: '#dc4a1a' },
   waveform: { flexDirection: 'row', alignItems: 'flex-end', gap: 3, height: 48, marginTop: 32 },
-  waveBar: { width: 4, borderRadius: 4, backgroundColor: '#8690ee' },
+  waveBar: { width: 4, borderRadius: 4, backgroundColor: colors.primary },
   actions: { paddingHorizontal: 24, paddingBottom: 48, gap: 12 },
-  stopBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: '#ac3509', paddingVertical: 18, borderRadius: 12 },
+  stopBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: colors.secondary, paddingVertical: 18, borderRadius: 12 },
   stopBtnText: { fontFamily: 'Manrope-Bold', fontSize: 18, color: '#fff' },
   cancelBtn: { alignItems: 'center', paddingVertical: 16, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12 },
-  cancelBtnText: { fontFamily: 'Manrope-Bold', fontSize: 16, color: '#94a3b8' },
+  cancelBtnText: { fontFamily: 'Manrope-Bold', fontSize: 16, color: colors.onSurfaceVariant },
 });

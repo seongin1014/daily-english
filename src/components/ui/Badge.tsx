@@ -1,19 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme';
 import { borderRadius } from '../../theme/spacing';
 
 type BadgeVariant = 'ready' | 'processing' | 'error' | 'archived' | 'beginner' | 'intermediate' | 'advanced';
-
-const variantStyles: Record<BadgeVariant, { bg: string; text: string; label: string }> = {
-  ready: { bg: colors.secondaryFixed, text: colors.onSecondaryFixedVariant, label: '완료' },
-  processing: { bg: colors.surfaceContainerHighest, text: colors.onSurfaceVariant, label: '처리중' },
-  error: { bg: colors.errorContainer, text: colors.onErrorContainer, label: '오류' },
-  archived: { bg: colors.surfaceContainerHighest, text: colors.onSurfaceVariant, label: 'ARCHIVED' },
-  beginner: { bg: '#e8f5e9', text: '#2e7d32', label: 'BEGINNER' },
-  intermediate: { bg: colors.secondaryFixed, text: colors.secondary, label: 'INTERMEDIATE' },
-  advanced: { bg: colors.primaryFixed, text: colors.primary, label: 'ADVANCED' },
-};
 
 interface BadgeProps {
   variant: BadgeVariant;
@@ -21,6 +11,18 @@ interface BadgeProps {
 }
 
 export function Badge({ variant, label }: BadgeProps) {
+  const { colors } = useTheme();
+
+  const variantStyles: Record<BadgeVariant, { bg: string; text: string; label: string }> = {
+    ready: { bg: colors.secondaryFixed, text: colors.onSecondaryFixedVariant, label: '완료' },
+    processing: { bg: colors.surfaceContainerHighest, text: colors.onSurfaceVariant, label: '처리중' },
+    error: { bg: colors.errorContainer, text: colors.onErrorContainer, label: '오류' },
+    archived: { bg: colors.surfaceContainerHighest, text: colors.onSurfaceVariant, label: 'ARCHIVED' },
+    beginner: { bg: colors.successContainer ?? '#e8f5e9', text: colors.success ?? '#2e7d32', label: 'BEGINNER' },
+    intermediate: { bg: colors.secondaryFixed, text: colors.secondary, label: 'INTERMEDIATE' },
+    advanced: { bg: colors.primaryFixed, text: colors.primary, label: 'ADVANCED' },
+  };
+
   const v = variantStyles[variant];
   return (
     <View style={[styles.badge, { backgroundColor: v.bg }]}>

@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors } from '@/src/theme/colors';
+import { useTheme } from '@/src/theme';
 
 type TabIconName = 'home' | 'mic' | 'menu-book' | 'settings';
 
@@ -15,9 +15,11 @@ const tabs: { name: string; title: string; icon: TabIconName; label: string }[] 
 ];
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
+  const { colors, isDark } = useTheme();
+
   return (
-    <BlurView intensity={70} tint="light" style={styles.tabBarBlur}>
-      <View style={styles.tabBar}>
+    <BlurView intensity={70} tint={isDark ? 'dark' : 'light'} style={styles.tabBarBlur}>
+      <View style={[styles.tabBar, { backgroundColor: isDark ? 'rgba(10,14,30,0.85)' : 'rgba(249,249,249,0.7)' }]}>
         {state.routes.map((route: any, index: number) => {
           const tab = tabs.find(t => t.name === route.name);
           if (!tab) return null;
@@ -28,14 +30,14 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               key={route.key}
               onPress={() => navigation.navigate(route.name)}
               activeOpacity={0.7}
-              style={[styles.tab, isFocused && styles.tabActive]}
+              style={[styles.tab, isFocused && { backgroundColor: colors.primaryContainer }]}
             >
               <MaterialIcons
                 name={tab.icon}
                 size={24}
-                color={isFocused ? '#ffffff' : '#94a3b8'}
+                color={isFocused ? '#ffffff' : colors.onSurfaceVariant}
               />
-              <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>
+              <Text style={[styles.tabLabel, { color: isFocused ? '#ffffff' : colors.onSurfaceVariant }]}>
                 {tab.label}
               </Text>
             </TouchableOpacity>
@@ -67,11 +69,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     borderTopWidth: 0,
-    shadowColor: '#1a1c1c',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 24,
-    elevation: 8,
   },
   tabBar: {
     flexDirection: 'row',
@@ -80,7 +77,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 32,
-    backgroundColor: 'rgba(249,249,249,0.7)',
   },
   tab: {
     flex: 1,
@@ -90,18 +86,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
   },
-  tabActive: {
-    backgroundColor: '#1a237e',
-  },
   tabLabel: {
     fontFamily: 'Inter-Medium',
     fontSize: 11,
     letterSpacing: 0.5,
     marginTop: 4,
-    color: '#94a3b8',
     textTransform: 'uppercase',
-  },
-  tabLabelActive: {
-    color: '#ffffff',
   },
 });

@@ -61,18 +61,85 @@ export const colors = {
   // Background
   background: '#f9f9f9',
   onBackground: '#1a1c1c',
+
+  // Semantic
+  success: '#16a34a',
+  successContainer: '#f0fdf4',
+  onSuccess: '#ffffff',
+  warning: '#F59E0B',
+  warningContainer: '#fffbeb',
 } as const;
 
 export const darkColors: Record<string, string> = {
-  surface: '#121212',
-  surfaceContainer: '#1e1e1e',
-  surfaceContainerLow: '#1a1a1a',
-  surfaceContainerLowest: '#0e0e0e',
-  surfaceContainerHigh: '#2a2a2a',
-  onSurface: '#f1f1f1',
-  onSurfaceVariant: '#c6c5d4',
-  background: '#121212',
-  onBackground: '#f1f1f1',
+  // Primary (adjusted for dark — indigo accent)
+  primary: '#8F7BE8',
+  primaryContainer: '#2A2460',
+  primaryFixed: '#2A2460',
+  primaryFixedDim: '#6B5DC2',
+  onPrimary: '#FFFFFF',
+  onPrimaryContainer: '#C4B8F0',
+  onPrimaryFixed: '#E0D8F8',
+  onPrimaryFixedVariant: '#8F7BE8',
+
+  // Secondary (warm coral, brightened for dark)
+  secondary: '#F7543E',
+  secondaryContainer: '#3D1A12',
+  secondaryFixed: '#3D1A12',
+  secondaryFixedDim: '#D94A36',
+  onSecondary: '#FFFFFF',
+  onSecondaryContainer: '#FFB59F',
+  onSecondaryFixed: '#FFB59F',
+  onSecondaryFixedVariant: '#F7543E',
+
+  // Tertiary
+  tertiary: '#8D9AA1',
+  tertiaryContainer: '#1E2A30',
+  tertiaryFixed: '#1E2A30',
+  tertiaryFixedDim: '#6B7980',
+  onTertiary: '#FFFFFF',
+  onTertiaryContainer: '#BBC8D0',
+  onTertiaryFixed: '#BBC8D0',
+  onTertiaryFixedVariant: '#8D9AA1',
+
+  // Surface (deep navy palette from reference)
+  surface: '#0A0E1E',
+  surfaceBright: '#1F1E2C',
+  surfaceContainer: '#141829',
+  surfaceContainerHigh: '#1F1E2C',
+  surfaceContainerHighest: '#282838',
+  surfaceContainerLow: '#101424',
+  surfaceContainerLowest: '#060A16',
+  surfaceDim: '#0A0E1E',
+  surfaceTint: '#8F7BE8',
+  surfaceVariant: '#282838',
+  onSurface: '#FFFFFF',
+  onSurfaceVariant: '#B0B0B0',
+
+  // Outline
+  outline: '#3A3A4A',
+  outlineVariant: '#2A2A3A',
+
+  // Error
+  error: '#FF6B6B',
+  errorContainer: '#3D1A1A',
+  onError: '#FFFFFF',
+  onErrorContainer: '#FFB4B4',
+
+  // Inverse
+  inverseSurface: '#E8E8E8',
+  inverseOnSurface: '#1A1A2E',
+  inversePrimary: '#121858',
+
+  // Background
+  background: '#0A0E1E',
+  onBackground: '#E8E8E8',
+
+  // Semantic
+  success: '#4ADE80',
+  successContainer: '#1A3D2A',
+  onSuccess: '#FFFFFF',
+  warning: '#FBBF24',
+  warningContainer: '#3D2E0A',
 };
 
 export type ColorTokens = typeof colors;

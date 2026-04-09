@@ -3,12 +3,13 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-nati
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { colors } from '@/src/theme/colors';
+import { useTheme } from '@/src/theme';
 import { useExpressions, invalidateDB } from '@/src/db/hooks';
 import { saveQuizResult } from '@/src/db/quizzes';
 import { ProgressBar } from '@/src/components/ui/ProgressBar';
 
 export default function MultipleChoiceQuiz() {
+  const { colors } = useTheme();
   const router = useRouter();
   const { data: allExpressions } = useExpressions();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -25,6 +26,8 @@ export default function MultipleChoiceQuiz() {
       return { expression: expr, options, correctIndex: options.indexOf(expr.english) };
     });
   }, [allExpressions]);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const question = questions[currentIndex];
   const isComplete = currentIndex >= questions.length;
@@ -120,7 +123,7 @@ export default function MultipleChoiceQuiz() {
           const isCorrect = idx === question.correctIndex;
           const isSelected = selected === idx;
           let borderColor = 'transparent';
-          if (answered && isCorrect) borderColor = '#16a34a';
+          if (answered && isCorrect) borderColor = colors.success;
           if (answered && isSelected && !isCorrect) borderColor = colors.error;
 
           return (
@@ -131,11 +134,11 @@ export default function MultipleChoiceQuiz() {
               activeOpacity={0.7}
               disabled={answered}
             >
-              <View style={[styles.optionLetter, answered && isCorrect && { backgroundColor: '#16a34a' }]}>
+              <View style={[styles.optionLetter, answered && isCorrect && { backgroundColor: colors.success }]}>
                 <Text style={[styles.optionLetterText, answered && isCorrect && { color: '#fff' }]}>{letters[idx]}</Text>
               </View>
               <Text style={styles.optionText}>{opt}</Text>
-              {answered && isCorrect && <MaterialIcons name="check-circle" size={22} color="#16a34a" style={{ marginLeft: 'auto' }} />}
+              {answered && isCorrect && <MaterialIcons name="check-circle" size={22} color={colors.success} style={{ marginLeft: 'auto' }} />}
             </TouchableOpacity>
           );
         })}
@@ -143,7 +146,7 @@ export default function MultipleChoiceQuiz() {
         {/* Feedback */}
         {answered && (
           <View style={[styles.feedback, selected === question.correctIndex ? styles.feedbackCorrect : styles.feedbackWrong]}>
-            <MaterialIcons name={selected === question.correctIndex ? 'auto-awesome' : 'info'} size={24} color={selected === question.correctIndex ? '#16a34a' : colors.error} />
+            <MaterialIcons name={selected === question.correctIndex ? 'auto-awesome' : 'info'} size={24} color={selected === question.correctIndex ? colors.success : colors.error} />
             <View style={{ flex: 1 }}>
               <Text style={styles.feedbackTitle}>{selected === question.correctIndex ? 'Well done!' : 'Not quite'}</Text>
               <Text style={styles.feedbackDesc}>{question.expression.context_english || question.expression.english}</Text>
@@ -163,10 +166,10 @@ export default function MultipleChoiceQuiz() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface, paddingTop: 60 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, marginBottom: 16 },
-  headerTitle: { fontFamily: 'Manrope-Bold', fontSize: 20, color: '#1a237e' },
+  headerTitle: { fontFamily: 'Manrope-Bold', fontSize: 20, color: colors.primaryContainer },
   scoreBox: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   scoreText: { fontFamily: 'Manrope-Bold', fontSize: 16, color: colors.onSurface },
   progressSection: { paddingHorizontal: 24, marginBottom: 20 },
@@ -183,14 +186,14 @@ const styles = StyleSheet.create({
   hintBox: { flexDirection: 'row', gap: 8, alignItems: 'flex-start', backgroundColor: colors.surfaceContainerLow, padding: 12, borderRadius: 8 },
   hintText: { fontFamily: 'Inter', fontSize: 13, color: colors.onSurfaceVariant, flex: 1, lineHeight: 20 },
   option: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: colors.surfaceContainerLowest, borderRadius: 16, padding: 18, marginBottom: 10, borderWidth: 2, borderColor: 'transparent' },
-  optionCorrect: { borderColor: '#16a34a', backgroundColor: '#f0fdf4' },
-  optionWrong: { borderColor: colors.error, backgroundColor: '#fef2f2' },
+  optionCorrect: { borderColor: colors.success, backgroundColor: colors.successContainer },
+  optionWrong: { borderColor: colors.error, backgroundColor: colors.errorContainer },
   optionLetter: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surfaceContainerLow, alignItems: 'center', justifyContent: 'center' },
   optionLetterText: { fontFamily: 'Manrope-Bold', fontSize: 14, color: colors.onSurface },
   optionText: { fontFamily: 'Inter-Medium', fontSize: 15, color: colors.onSurface, flex: 1 },
   feedback: { flexDirection: 'row', gap: 12, padding: 16, borderRadius: 12, marginTop: 8, marginBottom: 16, alignItems: 'flex-start' },
-  feedbackCorrect: { backgroundColor: '#f0fdf4', borderWidth: 1, borderColor: '#bbf7d0' },
-  feedbackWrong: { backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fecaca' },
+  feedbackCorrect: { backgroundColor: colors.successContainer, borderWidth: 1, borderColor: colors.success },
+  feedbackWrong: { backgroundColor: colors.errorContainer, borderWidth: 1, borderColor: colors.error },
   feedbackTitle: { fontFamily: 'Manrope-Bold', fontSize: 16, color: colors.onSurface, marginBottom: 4 },
   feedbackDesc: { fontFamily: 'Inter', fontSize: 13, color: colors.onSurfaceVariant, lineHeight: 20 },
   continueBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.secondary, paddingVertical: 16, borderRadius: 12 },

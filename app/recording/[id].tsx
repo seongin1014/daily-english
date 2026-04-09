@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Modal, TextInput,
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors } from '@/src/theme/colors';
+import { useTheme } from '@/src/theme';
 import { useRecording, useExpressions, invalidateDB } from '@/src/db/hooks';
 import { createExpression } from '@/src/db/expressions';
 import { splitSentences } from '@/src/services/extract';
@@ -12,6 +12,7 @@ import { Badge } from '@/src/components/ui/Badge';
 import type { Difficulty } from '@/src/types/expression';
 
 export default function RecordingDetailScreen() {
+  const { colors } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -47,6 +48,8 @@ export default function RecordingDetailScreen() {
     setAddEnglish(english);
     setShowAddModal(true);
   };
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const koreanSentences = useMemo(
     () => recording?.korean_transcript ? splitSentences(recording.korean_transcript) : [],
@@ -222,7 +225,7 @@ export default function RecordingDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingVertical: 12 },
   title: { fontFamily: 'Manrope-Bold', fontSize: 16, color: colors.onSurface },

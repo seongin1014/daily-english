@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, type ViewStyle } from 'react-native';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme';
 import { borderRadius } from '../../theme/spacing';
 
 interface CardProps {
@@ -9,8 +9,8 @@ interface CardProps {
   variant?: 'surface' | 'surfaceLow' | 'primary';
 }
 
-// No-Line Rule: no borders, boundaries via background color shifts only
 export function Card({ children, style, variant = 'surface' }: CardProps) {
+  const { colors } = useTheme();
   const bgColor = variant === 'primary' ? colors.primary
     : variant === 'surfaceLow' ? colors.surfaceContainerLow
     : colors.surfaceContainerLowest;
@@ -26,6 +26,5 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: borderRadius.xl,
     padding: 24,
-    // No borderWidth — enforces No-Line Rule from DESIGN.md
   },
 });

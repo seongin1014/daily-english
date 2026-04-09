@@ -1,21 +1,23 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Switch, Alert, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors } from '@/src/theme/colors';
 import { useAppStore } from '@/src/stores/useAppStore';
-import { useThemeMode } from '@/src/theme';
+import { useTheme, useThemeMode } from '@/src/theme';
 import { Card } from '@/src/components/ui/Card';
 import { signOut } from '@/src/services/firebase';
 
 export default function SettingsScreen() {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { themeMode, setThemeMode } = useThemeMode();
   const { user, subscription, monthlyUsage, monthlyLimit } = useAppStore();
   const [notifications, setNotifications] = useState(true);
   const [dailyGoal, setDailyGoal] = useState(10);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const handleSignOut = () => {
     Alert.alert('로그아웃', '로그아웃 하시겠습니까?', [
@@ -165,7 +167,7 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface },
   scroll: { paddingHorizontal: 24, paddingTop: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
