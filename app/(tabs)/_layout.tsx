@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
 
 type TabIconName = 'home' | 'mic' | 'menu-book' | 'settings';
@@ -16,10 +17,12 @@ const tabs: { name: string; title: string; icon: TabIconName; label: string }[] 
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const { colors, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'android' ? 16 : 0);
 
   return (
     <BlurView intensity={70} tint={isDark ? 'dark' : 'light'} style={styles.tabBarBlur}>
-      <View style={[styles.tabBar, { backgroundColor: isDark ? 'rgba(10,14,30,0.85)' : 'rgba(249,249,249,0.7)' }]}>
+      <View style={[styles.tabBar, { paddingBottom: bottomPadding + 8, backgroundColor: isDark ? 'rgba(10,14,30,0.85)' : 'rgba(249,249,249,0.7)' }]}>
         {state.routes.map((route: any, index: number) => {
           const tab = tabs.find(t => t.name === route.name);
           if (!tab) return null;
@@ -76,7 +79,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 32,
   },
   tab: {
     flex: 1,

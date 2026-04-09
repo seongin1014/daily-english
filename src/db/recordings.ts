@@ -66,3 +66,13 @@ export async function deleteRecording(id: number): Promise<void> {
   const db = await getDatabase();
   await db.runAsync('DELETE FROM recordings WHERE id = ?', id);
 }
+
+export async function deleteAllData(): Promise<void> {
+  const db = await getDatabase();
+  await db.execAsync(`
+    DELETE FROM quiz_results;
+    DELETE FROM reviews;
+    DELETE FROM expressions;
+    DELETE FROM recordings;
+  `);
+}

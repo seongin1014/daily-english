@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '@/src/theme';
 import { useDueCardCount, useStudyStats, useTodayReviewCount, useWeeklyActivity, useHardestExpressions } from '@/src/db/hooks';
 import { Card } from '@/src/components/ui/Card';
+import { DonutChart } from '@/src/components/ui/DonutChart';
 
 export default function StudyHub() {
   const { colors } = useTheme();
@@ -16,7 +17,6 @@ export default function StudyHub() {
   const { data: todayReviewed } = useTodayReviewCount();
   const { data: weeklyActivity } = useWeeklyActivity();
   const { data: hardest } = useHardestExpressions(5);
-  const masteryPct = stats.total > 0 ? Math.round((stats.mastered / stats.total) * 100) : 0;
   const maxWeekly = Math.max(...weeklyActivity, 1);
   const todayDayOfWeek = new Date().getDay();
 
@@ -28,9 +28,6 @@ export default function StudyHub() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>학습 허브</Text>
-          <TouchableOpacity>
-            <MaterialIcons name="notifications" size={24} color={colors.primary} />
-          </TouchableOpacity>
         </View>
 
         {/* Today's Review CTA */}
@@ -51,10 +48,12 @@ export default function StudyHub() {
         <Card style={styles.masteryCard}>
           <Text style={styles.sectionTitle}>숙달 수준</Text>
           <View style={styles.donutContainer}>
-            <View style={styles.donutOuter}>
-              <Text style={styles.donutPct}>{masteryPct}%</Text>
-              <Text style={styles.donutLabel}>OVERALL</Text>
-            </View>
+            <DonutChart
+              mastered={stats.mastered}
+              learning={stats.learning}
+              newCards={stats.newCards}
+              colors={colors}
+            />
           </View>
           <View style={styles.masteryRow}>
             <View style={styles.masteryItem}>
@@ -170,9 +169,6 @@ const createStyles = (colors: any) => StyleSheet.create({
   masteryCard: { marginBottom: 16 },
   sectionTitle: { fontFamily: 'Manrope-Bold', fontSize: 18, color: colors.onSurface, marginBottom: 16 },
   donutContainer: { alignItems: 'center', marginBottom: 20 },
-  donutOuter: { width: 140, height: 140, borderRadius: 70, borderWidth: 10, borderColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  donutPct: { fontFamily: 'Manrope-ExtraBold', fontSize: 32, color: colors.onSurface },
-  donutLabel: { fontFamily: 'Inter-SemiBold', fontSize: 10, color: colors.onSurfaceVariant, letterSpacing: 2, marginTop: 2 },
   masteryRow: { flexDirection: 'row', justifyContent: 'space-around' },
   masteryItem: { alignItems: 'center' },
   masteryCount: { fontFamily: 'Manrope-ExtraBold', fontSize: 24 },

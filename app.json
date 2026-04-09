@@ -26,6 +26,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.monik.echoling",
+      "versionCode": 1,
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
@@ -46,6 +47,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b42a834a-5305-413c-827f-afca7e25b3f1"
+      }
+    },
+    "owner": "seongin"
   }
 }

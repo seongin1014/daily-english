@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme';
-import { useRecordings, useDueCardCount, useExpressionCount, useTodayExpressionCount, useStreak, useTodayReviewCount } from '@/src/db/hooks';
+import { useRecordings, useDueCardCount, useExpressionCount, useTodayExpressionCount, useStreak, useTodayReviewCount, useSetting } from '@/src/db/hooks';
 import { useAppStore } from '@/src/stores/useAppStore';
 import { FocusPlate } from '@/src/components/ui/FocusPlate';
 import { Card } from '@/src/components/ui/Card';
@@ -22,7 +22,8 @@ export default function HomeScreen() {
   const { data: streak } = useStreak();
   const { data: todayReviewed } = useTodayReviewCount();
   const { subscription, monthlyUsage, monthlyLimit } = useAppStore();
-  const dailyGoal = 10; // TODO: 설정에서 가져오기
+  const { data: savedGoal } = useSetting('daily_goal', '10');
+  const dailyGoal = Number(savedGoal);
   const goalProgress = dailyGoal > 0 ? Math.min(1, todayReviewed / dailyGoal) : 0;
   const remaining = Math.max(0, monthlyLimit - monthlyUsage);
 
@@ -38,14 +39,6 @@ export default function HomeScreen() {
           <View>
             <Text style={styles.appTitle}>EchoLing</Text>
             <Text style={styles.subtitle}>일상이 영어로 돌아오다</Text>
-          </View>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconBtn}>
-              <MaterialIcons name="search" size={24} color={colors.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
-              <MaterialIcons name="notifications" size={24} color={colors.primary} />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -154,7 +147,7 @@ export default function HomeScreen() {
 
       {/* Quick Record FAB */}
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { bottom: insets.bottom + 80 }]}
         onPress={() => router.push('/record')}
         activeOpacity={0.8}
       >
@@ -170,9 +163,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 },
   appTitle: { fontFamily: 'Manrope-ExtraBold', fontSize: 28, color: colors.primary, letterSpacing: -0.8 },
   subtitle: { fontFamily: 'Inter-Medium', fontSize: 10, color: colors.onSurfaceVariant, letterSpacing: 2, textTransform: 'uppercase', marginTop: 2 },
-  headerIcons: { flexDirection: 'row', gap: 8 },
-  iconBtn: { padding: 8, borderRadius: 20 },
-  statsRow: { flexDirection: 'row', gap: 12 },
+statsRow: { flexDirection: 'row', gap: 12 },
   streakCard: { flex: 1, padding: 20 },
   streakLabel: { fontFamily: 'Pretendard-SemiBold', fontSize: 11, color: colors.secondary, letterSpacing: 1 },
   streakValue: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 8 },
@@ -206,5 +197,5 @@ const createStyles = (colors: any) => StyleSheet.create({
   usageBadge: { alignSelf: 'flex-end', marginBottom: 12 },
   usagePro: { fontFamily: 'Pretendard-Bold', fontSize: 12, color: colors.secondary, backgroundColor: colors.secondaryFixed, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, overflow: 'hidden' },
   usageFree: { fontFamily: 'Pretendard-Medium', fontSize: 12, color: colors.onSurfaceVariant, backgroundColor: colors.surfaceContainerLow, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, overflow: 'hidden' },
-  fab: { position: 'absolute', bottom: 100, right: 24, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.secondary, alignItems: 'center', justifyContent: 'center', shadowColor: 'rgba(172,53,9,0.4)', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 1, shadowRadius: 32, elevation: 12 },
+  fab: { position: 'absolute', right: 24, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.secondary, alignItems: 'center', justifyContent: 'center', shadowColor: 'rgba(172,53,9,0.4)', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 1, shadowRadius: 32, elevation: 12 },
 });

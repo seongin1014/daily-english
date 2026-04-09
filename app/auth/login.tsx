@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
@@ -7,7 +7,7 @@ import * as AuthSession from 'expo-auth-session';
 import * as Crypto from 'expo-crypto';
 import * as WebBrowser from 'expo-web-browser';
 import { useTheme } from '@/src/theme';
-import { signInWithApple, signInWithGoogle } from '@/src/services/firebase';
+import { signInWithApple, signInWithGoogle, signInWithEmail } from '@/src/services/firebase';
 import { useAppStore } from '@/src/stores/useAppStore';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -18,6 +18,32 @@ export default function LoginScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleEmailSignIn = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('입력 필요', '이메일과 비밀번호를 입력해주세요.');
+      return;
+    }
+    if (password.length < 6) {
+      Alert.alert('비밀번호 오류', '비밀번호는 6자 이상이어야 합니다.');
+      return;
+    }
+    try {
+      setLoading(true);
+      await signInWithEmail(email.trim(), password);
+    } catch (e: any) {
+      const msg = e.code === 'auth/invalid-email' ? '올바른 이메일 형식이 아닙니다.'
+        : e.code === 'auth/weak-password' ? '비밀번호가 너무 짧습니다.'
+        : e.code === 'auth/wrong-password' ? '비밀번호가 올바르지 않습니다.'
+        : e.code === 'auth/email-already-in-use' ? '이미 사용 중인 이메일입니다. 비밀번호를 확인해주세요.'
+        : '로그인에 실패했습니다.';
+      Alert.alert('로그인 실패', msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -98,6 +124,46 @@ export default function LoginScreen() {
           한국어 대화를 녹음하고{'\n'}영어 표현으로 학습하세요
         </Text>
 
+        {/* Email Login */}
+        <View style={styles.emailSection}>
+          <TextInput
+            style={styles.emailInput}
+            placeholder="이메일"
+            placeholderTextColor={colors.outline}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <TextInput
+            style={styles.emailInput}
+            placeholder="비밀번호"
+            placeholderTextColor={colors.outline}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+          <TouchableOpacity
+            style={styles.emailBtn}
+            onPress={handleEmailSignIn}
+            activeOpacity={0.8}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.emailBtnText}>이메일로 시작하기</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>또는</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
         {/* Auth Buttons */}
         <View style={styles.buttons}>
           {Platform.OS === 'ios' && (
@@ -135,18 +201,6 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Skip / Browse */}
-        <TouchableOpacity
-          style={styles.skipBtn}
-          onPress={() => {
-            useAppStore.getState().setBrowseMode();
-            router.replace('/');
-          }}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.skipBtnText}>로그인 없이 둘러보기</Text>
-        </TouchableOpacity>
-
         {/* Terms */}
         <Text style={styles.terms}>
           계속하면 서비스 이용약관 및 개인정보 처리방침에{'\n'}동의하는 것으로 간주됩니다.
@@ -168,7 +222,12 @@ const createStyles = (colors: any) => StyleSheet.create({
   appleBtnText: { fontFamily: 'Pretendard-SemiBold', fontSize: 16, color: '#fff' },
   googleBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: colors.surfaceContainerLowest, paddingVertical: 16, borderRadius: 12 },
   googleBtnText: { fontFamily: 'Pretendard-SemiBold', fontSize: 16, color: colors.onSurface },
-  skipBtn: { alignItems: 'center', paddingVertical: 14 },
-  skipBtnText: { fontFamily: 'Pretendard-Medium', fontSize: 14, color: colors.onSurfaceVariant, textDecorationLine: 'underline' },
+  emailSection: { gap: 10, marginBottom: 20 },
+  emailInput: { backgroundColor: colors.surfaceContainerLowest, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, fontFamily: 'Pretendard', fontSize: 15, color: colors.onSurface },
+  emailBtn: { backgroundColor: colors.secondary, paddingVertical: 16, borderRadius: 12, alignItems: 'center' },
+  emailBtnText: { fontFamily: 'Pretendard-SemiBold', fontSize: 16, color: '#fff' },
+  divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: colors.outlineVariant },
+  dividerText: { fontFamily: 'Pretendard', fontSize: 13, color: colors.outline },
   terms: { fontFamily: 'Pretendard', fontSize: 11, color: colors.outline, textAlign: 'center', lineHeight: 18 },
 });

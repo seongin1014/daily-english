@@ -52,3 +52,12 @@ export async function getTodayExpressionCount(): Promise<number> {
   );
   return result?.count ?? 0;
 }
+
+export async function getExpressionCountByRecording(recordingId: number): Promise<number> {
+  const db = await getDatabase();
+  const row = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) as count FROM expressions WHERE recording_id = ?',
+    recordingId
+  );
+  return row?.count ?? 0;
+}

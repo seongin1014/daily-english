@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Modal, TextInput, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
 import { useTheme } from '@/src/theme';
 import { useRecording, useExpressions, invalidateDB } from '@/src/db/hooks';
 import { createExpression } from '@/src/db/expressions';
@@ -10,6 +11,12 @@ import { splitSentences } from '@/src/services/extract';
 import { FocusPlate } from '@/src/components/ui/FocusPlate';
 import { Badge } from '@/src/components/ui/Badge';
 import type { Difficulty } from '@/src/types/expression';
+
+const formatTime = (ms: number) => {
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  return `${m}:${String(s % 60).padStart(2, '0')}`;
+};
 
 export default function RecordingDetailScreen() {
   const { colors } = useTheme();
@@ -22,6 +29,50 @@ export default function RecordingDetailScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addKorean, setAddKorean] = useState('');
   const [addEnglish, setAddEnglish] = useState('');
+
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [position, setPosition] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  useEffect(() => {
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, [sound]);
+
+  const handlePlayPause = async () => {
+    if (!recording?.audio_uri) return;
+
+    if (sound) {
+      if (isPlaying) {
+        await sound.pauseAsync();
+        setIsPlaying(false);
+      } else {
+        await sound.playAsync();
+        setIsPlaying(true);
+      }
+    } else {
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: recording.audio_uri },
+        { shouldPlay: true },
+        (status) => {
+          if (status.isLoaded) {
+            setPosition(status.positionMillis);
+            setDuration(status.durationMillis ?? 0);
+            if (status.didJustFinish) {
+              setIsPlaying(false);
+              setPosition(0);
+            }
+          }
+        }
+      );
+      setSound(newSound);
+      setIsPlaying(true);
+    }
+  };
 
   const handleSaveExpression = async () => {
     if (!addKorean.trim() || !addEnglish.trim()) {
@@ -99,15 +150,18 @@ export default function RecordingDetailScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Audio Player Placeholder */}
+        {/* Audio Player */}
         <View style={styles.player}>
-          <View style={styles.waveform}>
-            {waveHeights.map((h, i) => (
-              <View key={i} style={[styles.waveBar, { height: h }]} />
-            ))}
+          <View style={styles.playerMain}>
+            <View style={styles.waveform}>
+              {waveHeights.map((h, i) => (
+                <View key={i} style={[styles.waveBar, { height: h }]} />
+              ))}
+            </View>
+            <Text style={styles.timeLabel}>{formatTime(position)} / {formatTime(duration)}</Text>
           </View>
-          <TouchableOpacity style={styles.playBtn}>
-            <MaterialIcons name="play-arrow" size={32} color="#fff" />
+          <TouchableOpacity style={styles.playBtn} onPress={handlePlayPause}>
+            <MaterialIcons name={isPlaying ? 'pause' : 'play-arrow'} size={32} color="#fff" />
           </TouchableOpacity>
         </View>
 
@@ -237,8 +291,10 @@ const createStyles = (colors: any) => StyleSheet.create({
   tabTextActive: { color: colors.onSurface, fontFamily: 'Inter-SemiBold' },
   scroll: { paddingHorizontal: 24, paddingTop: 16 },
   player: { backgroundColor: colors.surfaceContainerLow, borderRadius: 16, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 24 },
-  waveform: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 2, height: 40 },
+  playerMain: { flex: 1, gap: 6 },
+  waveform: { flexDirection: 'row', alignItems: 'center', gap: 2, height: 40 },
   waveBar: { width: 3, borderRadius: 2, backgroundColor: colors.outlineVariant },
+  timeLabel: { fontFamily: 'Inter-Medium', fontSize: 12, color: colors.onSurfaceVariant },
   playBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.secondary, alignItems: 'center', justifyContent: 'center' },
   translationContent: { paddingVertical: 8 },
   sectionLabel: { fontFamily: 'Inter-SemiBold', fontSize: 11, color: colors.onSurfaceVariant, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 },

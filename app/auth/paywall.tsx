@@ -27,7 +27,10 @@ export default function PaywallScreen() {
   };
 
   const handlePurchase = async () => {
-    if (packages.length === 0) return;
+    if (packages.length === 0) {
+      Alert.alert('준비 중', '인앱 결제가 아직 설정되지 않았습니다. 곧 이용 가능합니다!');
+      return;
+    }
     setLoading(true);
     try {
       const success = await purchasePackage(packages[selectedIndex]);

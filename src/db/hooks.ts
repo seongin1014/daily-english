@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getAllRecordings, getRecording } from './recordings';
-import { getExpressionsByRecording, getAllExpressions, getExpressionCount, getTodayExpressionCount } from './expressions';
+import { getExpressionsByRecording, getAllExpressions, getExpressionCount, getTodayExpressionCount, getExpressionCountByRecording } from './expressions';
 import { getDueCards, getDueCardCount, getStudyStats, getStreak, getTodayReviewCount, getWeeklyActivity, getHardestExpressions, type StudyStats } from './reviews';
+import { getSetting } from './settings';
 import type { Recording } from '../types/recording';
 import type { Expression } from '../types/expression';
 import type { ReviewWithExpression } from '../types/review';
@@ -100,4 +101,19 @@ export function useHardestExpressions(limit: number = 5) {
     [] as { korean: string; english: string; ease_factor: number }[],
     [limit]
   );
+}
+
+export function useSetting(key: string, defaultValue: string) {
+  return useDBQuery(
+    async () => {
+      const val = await getSetting(key);
+      return val ?? defaultValue;
+    },
+    defaultValue,
+    [key]
+  );
+}
+
+export function useExpressionCountByRecording(recordingId: number) {
+  return useDBQuery(() => getExpressionCountByRecording(recordingId), 0, [recordingId]);
 }

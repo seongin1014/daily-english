@@ -3,9 +3,12 @@ import {
   initializeAuth,
   onAuthStateChanged,
   signInWithCredential,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   OAuthProvider,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
+  updateProfile,
   type User,
   // @ts-ignore — getReactNativePersistence exists in firebase/auth/react-native
 } from 'firebase/auth';
@@ -63,6 +66,27 @@ export async function signInWithGoogle(idToken: string): Promise<User> {
   const result = await signInWithCredential(auth, credential);
   await ensureUserDocument(result.user);
   return result.user;
+}
+
+export async function signInWithEmail(email: string, password: string): Promise<User> {
+  try {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    await ensureUserDocument(result.user);
+    return result.user;
+  } catch (e: any) {
+    if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential') {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await ensureUserDocument(result.user);
+      return result.user;
+    }
+    throw e;
+  }
+}
+
+export async function updateDisplayName(name: string): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Not authenticated');
+  await updateProfile(user, { displayName: name });
 }
 
 export async function signOut(): Promise<void> {
